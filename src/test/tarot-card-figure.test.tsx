@@ -50,16 +50,40 @@ describe('TarotCardFigure compact mode', () => {
     expect(artwork.getAttribute('sizes')).toMatch(/^auto, /)
     expect(artwork).toHaveAttribute('loading', 'lazy')
     expect(artwork).toHaveAttribute('decoding', 'async')
-    expect(Number(artwork.getAttribute('width'))).toBeGreaterThan(720)
-    expect(artwork).toHaveAttribute('height', '1810')
+    expect(artwork).toHaveAttribute('width', '240')
+    expect(artwork).toHaveAttribute('height', '400')
     expect(artwork).toHaveAttribute('alt', `${card.nameZh}（${card.nameEn}）牌面`)
-    expect(artwork.getAttribute('srcset')).toContain(`${artwork.getAttribute('width')}w`)
-    expect(artwork.closest('picture')?.firstElementChild).toHaveAttribute('type', 'image/webp')
+    expect(artwork).not.toHaveAttribute('srcset')
+    expect(artwork.closest('picture')?.firstElementChild).toHaveAttribute('type', 'image/avif')
 
     const headerSpans = container.querySelectorAll('.tarot-card-figure__header span')
 
     expect(headerSpans).toHaveLength(1)
     expect(headerSpans.item(0)?.textContent).toBe(card.nameZh)
     expect(screen.queryByText('Major Arcana')).not.toBeInTheDocument()
+  })
+})
+
+
+describe('TarotCardFigure image loading', () => {
+  it('supports eager above-the-fold images with explicit responsive sizes', () => {
+    const card = TAROT_DECK[0]
+    const { container } = render(<TarotCardFigure art={CARD_ART_MANIFEST[card.id]}
+      card={card} revealed loading="eager" />)
+    expect(screen.getByRole('img')).toHaveAttribute('loading', 'eager')
+    const sources = container.querySelectorAll('source')
+    expect(sources).toHaveLength(2)
+    for (const source of sources) {
+      expect(source.getAttribute('sizes')).not.toContain('auto')
+      expect(source.getAttribute('srcset')).toContain('240w')
+      expect(source.getAttribute('srcset')).toContain('480w')
+    }
+  })
+
+  it('does not request artwork in minimal mode', () => {
+    const card = TAROT_DECK[0]
+    const { container } = render(<TarotCardFigure art={CARD_ART_MANIFEST[card.id]}
+      card={card} revealed imageProfile="minimal" />)
+    expect(container.querySelector('picture')).toBeNull()
   })
 })

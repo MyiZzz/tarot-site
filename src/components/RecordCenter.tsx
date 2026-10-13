@@ -101,13 +101,15 @@ const RecordCardThumbs = ({ record }: { record: ReadingRecord }) => (
 
       return imageAsset ? (
         <picture key={`${record.id}-${card.cardId}-${card.positionLabel}`}>
-          <source srcSet={imageAsset.thumbnailWebpUrl} type="image/webp" />
+          <source sizes="96px" srcSet={imageAsset.avifSrcSet} type="image/avif" />
+          <source sizes="96px" srcSet={imageAsset.webpSrcSet} type="image/webp" />
           <img
-            src={imageAsset.thumbnailJpgUrl}
+            src={imageAsset.fallbackUrl}
             alt={`${card.cardName}牌面`}
             height={160}
             loading="lazy"
             width={96}
+            decoding="async"
           />
         </picture>
       ) : null

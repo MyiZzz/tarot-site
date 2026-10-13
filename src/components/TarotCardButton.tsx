@@ -7,6 +7,7 @@ interface TarotCardButtonProps {
   revealed: boolean
   onReveal: () => void
   compact?: boolean
+  loading?: 'lazy' | 'eager'
   testId?: string
 }
 
@@ -16,6 +17,7 @@ export function TarotCardButton({
   revealed,
   onReveal,
   compact = false,
+  loading,
   testId,
 }: TarotCardButtonProps) {
   return (
@@ -25,6 +27,7 @@ export function TarotCardButton({
       compact={compact}
       imageProfile={imageProfile}
       interactive={!revealed}
+      loading={loading}
       label={entry.positionLabel}
       onClick={onReveal}
       orientation={entry.drawn.orientation}

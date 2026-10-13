@@ -12,6 +12,7 @@ interface TarotCardFigureProps {
   onClick?: () => void
   className?: string
   imageProfile?: 'detail' | 'thumb' | 'minimal'
+  loading?: 'lazy' | 'eager'
   testId?: string
 }
 
@@ -60,6 +61,7 @@ export function TarotCardFigure({
   onClick,
   className = '',
   imageProfile = 'detail',
+  loading = 'lazy',
   testId,
 }: TarotCardFigureProps) {
   const Tag = interactive ? 'button' : 'div'
@@ -75,19 +77,9 @@ export function TarotCardFigure({
   const imageAsset = CARD_IMAGE_ASSET_BY_ID[card.id]
   const shouldShowArtwork =
     imageProfile !== 'minimal' && Boolean(art.imageUrl && imageAsset)
-  // Lazy images can use their rendered width; retain estimates for older browsers.
-  const imageSizes = imageProfile === 'thumb'
-    ? 'auto, (max-width: 768px) 120px, 160px'
-    : 'auto, (max-width: 768px) 200px, 320px'
-  const fallbackSrc = imageProfile === 'thumb'
-    ? imageAsset?.thumbnailJpgUrl
-    : imageAsset?.detailJpgUrl ?? art.imageUrl
-  const fallbackSrcSet = imageAsset
-    ? `${imageAsset.thumbnailJpgUrl} 240w, ${imageAsset.detailJpgUrl} ${imageAsset.width}w`
-    : undefined
-  const webpSrcSet = imageAsset
-    ? `${imageAsset.thumbnailWebpUrl} 240w, ${imageAsset.detailWebpUrl} 720w`
-    : undefined
+  const imageSizes = `${loading === 'lazy' ? 'auto, ' : ''}${imageProfile === 'thumb'
+    ? '(max-width: 768px) 120px, 160px'
+    : '(max-width: 768px) 200px, 320px'}`
 
   if (compact) {
     return (
@@ -128,21 +120,19 @@ export function TarotCardFigure({
             {shouldShowArtwork ? (
               <div className="tarot-card-figure__image-wrap">
                 <picture>
-                  {webpSrcSet ? (
-                    <source sizes={imageSizes} srcSet={webpSrcSet} type="image/webp" />
-                  ) : null}
+                  <source sizes={imageSizes} srcSet={imageAsset.avifSrcSet} type="image/avif" />
+                  <source sizes={imageSizes} srcSet={imageAsset.webpSrcSet} type="image/webp" />
                   <img
                     className={`tarot-card-figure__image ${
                       orientation === 'down' ? 'is-reversed' : ''
                     }`}
-                    src={fallbackSrc}
-                    srcSet={fallbackSrcSet}
+                    src={imageAsset.fallbackUrl}
                     sizes={imageSizes}
                     alt={`${card.nameZh}（${card.nameEn}）牌面`}
                     width={imageAsset?.width}
                     height={imageAsset?.height}
                     decoding="async"
-                    loading="lazy"
+                    loading={loading}
                   />
                 </picture>
               </div>

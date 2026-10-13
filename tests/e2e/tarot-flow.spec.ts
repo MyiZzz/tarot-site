@@ -39,7 +39,7 @@ test('mobile viewport keeps daily guidance minimal and encyclopedia detail compa
 
   await expect(page.getByRole('heading', { name: '结果解读' })).toBeVisible()
 
-  await page.getByRole('button', { name: '牌卡百科' }).click()
+  await page.getByRole('button', { name: '牌卡百科', exact: true }).click()
   await page.getByRole('button', { name: /查看全部 78 张/i }).click()
 
   const encyclopediaList = page.locator('[data-testid="encyclopedia-list"]')

@@ -6,6 +6,7 @@
   "scripts": {
     "assets:optimize": "node ./scripts/generate-optimized-assets.mjs",
     "dev": "vite",
+    "prebuild": "npm run assets:optimize",
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "test:e2e": "playwright test",

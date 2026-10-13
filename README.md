@@ -209,7 +209,8 @@ npm run test:e2e
 - `src/lib`：日期、分享、布局等辅助逻辑
 - `src/test`：Vitest 单元与组件测试
 - `tests/e2e`：Playwright 浏览器流测试
-- `public/cards/rws`：牌面资源与衍生图
+- `assets-src/cards/rws`：原始牌面与来源说明（不参与发布）
+- `public/cards/rws`：240/480px AVIF、WebP 与 240px JPEG 衍生图
 - `scripts/generate-optimized-assets.mjs`：资源衍生图生成脚本
 
 ## 架构说明
@@ -225,7 +226,7 @@ npm run test:e2e
 - 不提供账号、支付、订阅、云同步
 - 当前偏向浏览器端单人使用场景
 - 每日揭晓状态属于当前会话状态，刷新页面后会重置
-- 资源衍生图生成不是 `build` 的默认步骤，需要按需手动执行 `npm run assets:optimize`
+- `build` 会自动增量生成衍生图；也可手动执行 `npm run assets:optimize`。小体积衍生图纳入版本控制，开发无需预先构建。
 
 ## 文档
 

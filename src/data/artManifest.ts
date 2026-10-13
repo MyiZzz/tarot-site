@@ -1,5 +1,5 @@
 import type { CardArtManifest } from '../domain/tarot'
-import { CARD_IMAGE_BY_ID, CARD_IMAGE_CREDIT } from './cardImages'
+import { CARD_IMAGE_ASSET_BY_ID, CARD_IMAGE_CREDIT } from './cardImages'
 import { TAROT_DECK } from './cards'
 
 const MAJOR_MOTIFS: Record<string, string> = {
@@ -68,7 +68,7 @@ export const CARD_ART_MANIFEST: Record<string, CardArtManifest> = Object.fromEnt
           constellation: `大牌 ${String(card.number).padStart(2, '0')}`,
           seal: `阿尔卡那 ${card.number}`,
           glyphs,
-          imageUrl: CARD_IMAGE_BY_ID[card.id],
+          imageUrl: CARD_IMAGE_ASSET_BY_ID[card.id].fallbackUrl,
           imageCredit: CARD_IMAGE_CREDIT,
         } satisfies CardArtManifest,
       ]
@@ -86,7 +86,7 @@ export const CARD_ART_MANIFEST: Record<string, CardArtManifest> = Object.fromEnt
         constellation: `${card.nameEn.split(' of ')[0]} · ${card.nameEn.split(' of ')[1]}`,
         seal: `${SUIT_SEALS[card.suit]} ${card.number}`,
         glyphs,
-        imageUrl: CARD_IMAGE_BY_ID[card.id],
+        imageUrl: CARD_IMAGE_ASSET_BY_ID[card.id].fallbackUrl,
         imageCredit: CARD_IMAGE_CREDIT,
       } satisfies CardArtManifest,
     ]

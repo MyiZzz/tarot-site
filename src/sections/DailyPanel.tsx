@@ -67,7 +67,7 @@ export function DailyPanel({
         </div>
 
         <div className="daily-card-slot">
-          <TarotCardButton entry={entry} onReveal={onReveal} revealed={dailyRevealed} />
+          <TarotCardButton loading="eager" entry={entry} onReveal={onReveal} revealed={dailyRevealed} />
         </div>
       </div>
     </section>
