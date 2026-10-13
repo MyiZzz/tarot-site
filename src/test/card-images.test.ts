@@ -1,3 +1,4 @@
+import sharp from 'sharp'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -18,6 +19,23 @@ describe('rws card image mapping', () => {
       expect(imageAsset.thumbnailWebpUrl).toBe(`${import.meta.env.BASE_URL}cards/rws/thumb-webp/${card.id}.webp`)
       expect(imageAsset.detailWebpUrl).toBe(`${import.meta.env.BASE_URL}cards/rws/detail-webp/${card.id}.webp`)
     }
+  })
+
+  it('uses actual intrinsic dimensions for every srcset candidate', async () => {
+    await Promise.all(TAROT_DECK.map(async (card) => {
+      const metadata = await sharp(join(process.cwd(), 'public', 'cards', 'rws', `${card.id}.jpg`)).metadata()
+      const asset = CARD_IMAGE_ASSET_BY_ID[card.id]
+      expect(asset.width).toBe(metadata.width)
+      expect(asset.height).toBe(metadata.height)
+      for (const [folder, extension, width] of [
+        ['thumb-jpg', 'jpg', 240],
+        ['thumb-webp', 'webp', 240],
+        ['detail-webp', 'webp', 720],
+      ] as const) {
+        const candidate = await sharp(join(process.cwd(), 'public', 'cards', 'rws', folder, `${card.id}.${extension}`)).metadata()
+        expect(candidate.width).toBe(width)
+      }
+    }))
   })
 
   it('has generated thumbnail and webp assets on disk for every card id', () => {
