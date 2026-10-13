@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --font-body: 'Inter', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --font-display:
     'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', serif;
-  --font-accent: 'Inter', 'PingFang SC', 'Noto Sans SC', sans-serif;
-  --surface-lowest: #0e0e0e;
-  --surface-low: #1c1b1b;
-  --surface: #201f1f;
-  --surface-high: #2a2a2a;
-  --surface-highest: #353534;
+  --font-accent: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --surface-lowest: #101013;
+  --surface-low: #19191f;
+  --surface: #202027;
+  --surface-high: #2a2932;
+  --surface-highest: #36343e;
   --primary: #eac382;
   --primary-container: #cda869;
   --on-primary: #422c00;
@@ -19,6 +19,31 @@
   --text-soft: #d1c5b5;
   --outline: #9a8f81;
   --outline-variant: #4e4639;
+  --accent-lilac: #c5b8df;
+  --border: rgba(234, 195, 130, 0.2);
+  --type-xs: 0.75rem;
+  --type-sm: 0.875rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: clamp(1.4rem, 2.4vw, 1.85rem);
+  --type-display: clamp(2rem, 3.8vw, 3.65rem);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1.25rem;
+  --radius-lg: 1.75rem;
+  --shadow-ambient: 0 20px 60px rgba(0, 0, 0, 0.24);
+  --shadow-gold: 0 6px 24px rgba(205, 168, 105, 0.16);
+  --motion-fast: 160ms;
+  --motion-normal: 280ms;
+  --motion-reveal: 700ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: dark;
   --bg-night: var(--surface-lowest);
   --accent-gold: var(--primary-container);
   --accent-red: #ffb4a9;
@@ -73,6 +98,7 @@ h3,
 button {
   border: 0;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 a:focus-visible,
@@ -99,9 +125,15 @@ a {
   *,
   *::before,
   *::after {
+    animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
 }
+
+::selection { background: var(--primary); color: var(--on-primary); }
+:where(button, input, select, summary) { min-height: 44px; }
+:where(h1, h2, h3, p) { overflow-wrap: anywhere; }
+:where(input, textarea, select) { font-size: 1rem; }
