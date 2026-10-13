@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { TAROT_DECK } from '../data/cards'
@@ -124,7 +124,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     expect(container.querySelector('.result-actions__primary')).toBeInTheDocument()
     expect(container.querySelectorAll('.ghost-button--icon-only')).toHaveLength(2)
@@ -160,7 +161,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     const inputs = container.querySelectorAll<HTMLInputElement>('input[type="text"]')
 
@@ -201,7 +203,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     expect(screen.getByText('核心结论')).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.coreConclusion)).toBeInTheDocument()
@@ -242,7 +245,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     const readingList = container.querySelector<HTMLDivElement>('.spread-board__reading-list')!
     expect(readingList).toBeEmptyDOMElement()
@@ -272,7 +276,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     expect(within(readingList).getByText(reading.positionReadings[0]!.message)).toBeInTheDocument()
   })

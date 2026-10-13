@@ -32,10 +32,14 @@ export default defineConfig({
     },
   ],
   test: {
+    // Bound jsdom CPU/memory pressure on shared CI runners.
+    maxWorkers: 2,
     include: ['src/test/**/*.{test,spec}.{ts,tsx}', 'src/test/*.{test,spec}.{ts,tsx}'],
     exclude: ['tests/e2e/**'],
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    reporters: process.env.CI ? ['verbose', 'junit'] : ['default'],
+    outputFile: { junit: 'test-results/vitest/junit.xml' },
   },
 })
