@@ -21,6 +21,7 @@ export function SpreadLayoutBoard({
 }: SpreadLayoutBoardProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [stageScale, setStageScale] = useState(1)
+  const [view, setView] = useState<'cards' | 'layout'>('cards')
   const boardMeta = useMemo(() => getBoardMetaForSpread(spread), [spread])
   const stageLayout = useMemo(
     () => buildSpreadStageLayout(boardMeta, revealedPositions),
@@ -51,7 +52,11 @@ export function SpreadLayoutBoard({
   )
 
   return (
-    <div className="spread-board-shell">
+    <div className="spread-board-shell" data-view={view}>
+      <div className="spread-board__view-toggle" role="group" aria-label="牌面显示方式">
+        <button className={`pill ${view === 'cards' ? 'is-active' : ''}`} type="button" aria-pressed={view === 'cards'} onClick={() => setView('cards')}>清晰牌面</button>
+        <button className={`pill ${view === 'layout' ? 'is-active' : ''}`} type="button" aria-pressed={view === 'layout'} onClick={() => setView('layout')}>牌阵布局</button>
+      </div>
       <div className="spread-board-scroll" ref={scrollRef} role="region" aria-label="牌阵桌面" tabIndex={0}>
         <div
           className="spread-board-stage"

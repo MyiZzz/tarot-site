@@ -200,6 +200,7 @@ export function RecordCenter({
         <div className="utility-toggle">
           <button
             aria-label="全部"
+            aria-pressed={filter === 'all'}
             className={`pill ${filter === 'all' ? 'is-active' : ''}`}
             type="button"
             onClick={() => onFilterChange('all')}
@@ -209,6 +210,7 @@ export function RecordCenter({
           </button>
           <button
             aria-label="收藏"
+            aria-pressed={filter === 'saved'}
             className={`pill ${filter === 'saved' ? 'is-active' : ''}`}
             type="button"
             onClick={() => onFilterChange('saved')}
@@ -218,6 +220,7 @@ export function RecordCenter({
           </button>
           <button
             aria-label="自动归档"
+            aria-pressed={filter === 'auto'}
             className={`pill ${filter === 'auto' ? 'is-active' : ''}`}
             type="button"
             onClick={() => onFilterChange('auto')}
@@ -227,6 +230,7 @@ export function RecordCenter({
           </button>
           <button
             aria-label="每日一张"
+            aria-pressed={filter === 'daily'}
             className={`pill ${filter === 'daily' ? 'is-active' : ''}`}
             type="button"
             onClick={() => onFilterChange('daily')}
@@ -364,7 +368,7 @@ export function RecordCenter({
 
                 <div className="record-card__actions">
                   <button
-                    aria-label={selected ? 'remove from compare' : 'add to compare'}
+                    aria-pressed={selected}
                     className={`pill ${selected ? 'is-active' : ''}`}
                     disabled={disabled}
                     type="button"

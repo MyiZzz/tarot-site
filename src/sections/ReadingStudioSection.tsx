@@ -167,39 +167,6 @@ export function ReadingStudioSection({
         {selectedTopic ? <p className="selection-note">{selectedTopic.framing}</p> : null}
       </div>
 
-      {meaningHint || selectedGuide ? (
-        <article className="result-panel" data-testid="studio-guide-panel">
-          <p className="eyebrow">Selection Guide</p>
-          {meaningHint ? (
-            <div className="result-panel__stack">
-              <h3>提问提醒</h3>
-              <p>{meaningHint}</p>
-            </div>
-          ) : null}
-          {selectedGuide ? (
-            <div className="result-panel__stack">
-              <p className="eyebrow">Spread Guide</p>
-              <h3>{selectedVariant?.title ?? selectedSpread?.title ?? '牌阵说明'}</h3>
-              <div className="record-card__details">
-                <div>
-                  <h4>适合回答什么</h4>
-                  <p>{selectedGuide.bestFor}</p>
-                </div>
-                <div>
-                  <h4>什么时候选它</h4>
-                  <p>{selectedGuide.chooseWhen}</p>
-                </div>
-                {selectedGuide.avoidWhen ? (
-                  <div>
-                    <h4>什么时候不要用它</h4>
-                    <p>{selectedGuide.avoidWhen}</p>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-        </article>
-      ) : null}
 
       <h3 className="studio-step-title">选择适合你的牌阵</h3>
       <div className="spread-grid">
@@ -275,6 +242,42 @@ export function ReadingStudioSection({
         </div>
       ) : null}
 
+      {meaningHint || selectedGuide ? (
+        <details className="result-panel studio-guide" data-testid="studio-guide-panel">
+          <summary>查看提问与牌阵指南</summary>
+
+          {meaningHint ? (
+            <div className="result-panel__stack">
+              <h3>提问提醒</h3>
+              <p>{meaningHint}</p>
+            </div>
+          ) : null}
+          {selectedGuide ? (
+            <div className="result-panel__stack">
+              <p className="eyebrow">Spread Guide</p>
+              <h3>{selectedVariant?.title ?? selectedSpread?.title ?? '牌阵说明'}</h3>
+              <div className="record-card__details">
+                <div>
+                  <h4>适合回答什么</h4>
+                  <p>{selectedGuide.bestFor}</p>
+                </div>
+                <div>
+                  <h4>什么时候选它</h4>
+                  <p>{selectedGuide.chooseWhen}</p>
+                </div>
+                {selectedGuide.avoidWhen ? (
+                  <div>
+                    <h4>什么时候不要用它</h4>
+                    <p>{selectedGuide.avoidWhen}</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </details>
+      ) : null}
+
+
       <div className="draw-summary">
         <div className="draw-summary__row">
           <span>当前组合</span>
@@ -293,9 +296,7 @@ export function ReadingStudioSection({
           {isShuffling ? '正在洗牌，请稍候，感受此刻的问题…' : !question.trim() ? '先写下你的问题，或选择一个提问示例。' : !topic ? '选择一个主题，让指引更贴近你的问题。' : !selectedSpread ? '选择一个牌阵，即可开始抽牌。' : '准备好了。深呼吸，让牌面为你打开新的视角。'}
         </p>
         <StatusMessage message={drawNotice} />
-        <p className="selection-note">
-          重抽规则：同一问题在 30 秒内重复抽牌时，会先提示确认，避免无意识反复重抽。
-        </p>
+
       </div>
     </section>
   )

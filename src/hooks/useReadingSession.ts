@@ -119,6 +119,11 @@ export const useReadingSession = ({
     !isShuffling
   const effectiveShuffleDelayMs =
     shuffleDelayMs ?? SHUFFLE_DELAY_BY_SPEED[preferences.shuffleSpeed]
+  const readingReady = reading !== null &&
+    reading.input.question === question.trim() &&
+    reading.input.topic === topic &&
+    reading.input.spreadId === spreadId &&
+    reading.input.variantId === variantId
   const allRevealed =
     reading !== null && revealedPositions.length === reading.cards.length
 
@@ -403,6 +408,7 @@ export const useReadingSession = ({
     needsReDrawConfirm,
     question,
     reading,
+    readingReady,
     recordNotice,
     recordTagsInput,
     recordTitle,

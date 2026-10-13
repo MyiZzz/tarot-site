@@ -937,7 +937,7 @@
 }
 
 .encyclopedia-chip.is-active small {
-  color: rgba(195, 69, 55, 0.8);
+  color: var(--text-soft);
 }
 
 .encyclopedia-detail {
@@ -2058,4 +2058,61 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
 
 @media (min-width: 641px) {
   .spread-board-stage { zoom: var(--stage-scale, 1); }
+}
+
+/* Keep guidance optional and the mobile ritual within easy reach. */
+.studio-guide { margin-top: var(--space-4); }
+.studio-guide summary { cursor: pointer; color: var(--primary); padding-block: 12px; min-height: 44px; }
+.studio-guide[open] summary { margin-bottom: var(--space-4); }
+.encyclopedia-detail--empty { align-content: center; min-height: 180px; color: var(--text-soft); }
+@media (max-width: 640px) {
+  html { scroll-padding-bottom: 220px; }
+  .stitch-panel--studio .section__heading { margin-bottom: 12px; }
+  .reading-progress { margin-bottom: 16px; }
+  .reading-progress li { padding-block: 8px; }
+  .question-field textarea { min-height: 88px; padding: 12px; }
+  .question-suggestions { margin-block: 12px; }
+  .question-suggestions__list { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .question-suggestions__pill { flex-shrink: 0; max-width: 280px; padding: 10px 12px; font-size: 12px; }
+  .topic-selector .pill-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .topic-selector .pill { padding: 10px 6px; text-align: center; min-height: 44px; }
+  .topic-selector .pill small { display: none; }
+  .topic-selector > .selection-note { margin-top: 8px; font-size: 12px; }
+  .studio-step-title { margin: 20px 0 12px; }
+  .spread-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .spread-card { min-height: 80px; padding: 12px; gap: 6px; }
+  .spread-card__body { display: block; }
+  .spread-card__info h3 { font-size: 14px; margin: 0; }
+  .spread-card__info p, .spread-card .spread-preview { display: none; }
+  .spread-card__topline { font-size: 11px; gap: 4px; padding-right: 10px; }
+  .spread-card.is-active::after { top: 8px; right: 6px; font-size: 12px; }
+  .draw-summary { position: sticky; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 10; padding: 12px; gap: 8px; background: var(--surface-low); box-shadow: 0 -8px 24px #10101399; }
+  .draw-summary__row { display: block; }
+  .draw-summary__row > span { display: none; }
+  .draw-summary__row p { margin: 0; font-size: 12px; }
+  .draw-summary .primary-button { min-height: 44px; padding: 10px; }
+  .draw-summary .draw-guidance { padding: 0; border: 0; background: none; font-size: 12px; }
+  .encyclopedia-panel .utility-toggle, #records .utility-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .encyclopedia-panel .utility-toggle .pill, #records .utility-toggle .pill { padding: 12px; }
+}
+
+/* A full-size reading view preserves artwork and labels; the spatial layout remains available. */
+.spread-board__view-toggle { display: flex; gap: 8px; }
+.spread-board-scroll { scroll-margin-top: 104px; }
+.spread-board-shell[data-view='cards'] .spread-board-stage { width: 100%; min-width: 0; height: auto; margin: 0; zoom: 1; }
+.spread-board-shell[data-view='cards'] :is(.spread-board, .spread-board__ritual-layer, .spread-board__captions-layer) { display: none; }
+.spread-board-shell[data-view='cards'] .spread-board__cards-layer { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 240px)); justify-content: center; gap: 24px; }
+.spread-board-shell[data-view='cards'] .spread-board__slot--card { position: relative; left: auto; top: auto; width: 100%; transform: none; }
+.spread-board-shell[data-view='cards'] .spread-board__mobile-label { display: block; margin-bottom: 8px; color: var(--primary); font-size: 14px; }
+.spread-board-shell[data-view='cards'] .tarot-card-figure__face--front { padding: 12px; }
+.spread-board-shell[data-view='cards'] .tarot-card-figure__frame { min-height: 0; margin-block: 8px; }
+.spread-board-shell[data-view='cards'] .tarot-card-figure__footer { flex-wrap: wrap; }
+.spread-board-shell[data-view='cards'] .tarot-card-figure__footer strong { font-size: 18px; }
+.spread-board-shell[data-view='cards'] .tarot-card-figure__footer small { font-size: 12px; }
+@media (max-width: 640px) {
+  .spread-board__view-toggle { display: none; }
+  .spread-board-scroll { scroll-margin-top: 80px; }
+  .spread-board-shell[data-view='cards'] .spread-board__cards-layer { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 12px; }
+  .spread-board-shell[data-view='cards'] .tarot-card-figure__face--front { padding: 10px; }
+  .draw-summary__actions { padding-top: 0; border-top: 0; }
 }
