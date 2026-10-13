@@ -109,13 +109,12 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
   const filteredByGroup = scopeCards.filter((card) => matchesGroupFilter(card, groupFilter))
   const visibleCards = filteredByGroup.filter((card) => matchesQuery(card, deferredQuery))
   const resolvedSelectedCardId =
-    selectedCardId !== null && filteredByGroup.some((card) => card.id === selectedCardId)
+    selectedCardId !== null && visibleCards.some((card) => card.id === selectedCardId)
       ? selectedCardId
-      : visibleCards[0]?.id ?? filteredByGroup[0]?.id ?? null
+      : visibleCards[0]?.id ?? null
 
   const selectedCard =
     visibleCards.find((card) => card.id === resolvedSelectedCardId) ??
-    filteredByGroup.find((card) => card.id === resolvedSelectedCardId) ??
     null
 
   return (
@@ -137,6 +136,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
       <div className="utility-row">
         <div className="utility-toggle">
           <button
+            aria-pressed={scope === 'drawn'}
             className={`pill ${scope === 'drawn' ? 'is-active' : ''}`}
             type="button"
             onClick={() => setScope('drawn')}
@@ -145,6 +145,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
             <small>{featuredCards.length || 0} 张</small>
           </button>
           <button
+            aria-pressed={scope === 'all'}
             className={`pill ${scope === 'all' ? 'is-active' : ''}`}
             type="button"
             onClick={() => setScope('all')}
@@ -169,6 +170,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
         {GROUP_FILTERS.map((entry) => (
           <button
             key={entry.id}
+            aria-pressed={groupFilter === entry.id}
             className={`pill ${groupFilter === entry.id ? 'is-active' : ''}`}
             type="button"
             onClick={() => setGroupFilter(entry.id)}
@@ -189,6 +191,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
             visibleCards.map((card) => (
               <button
                 key={card.id}
+                aria-pressed={card.id === resolvedSelectedCardId}
                 className={`encyclopedia-chip ${
                   card.id === resolvedSelectedCardId ? 'is-active' : ''
                 }`}
@@ -201,7 +204,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
             ))
           ) : (
             <p className="selection-note">
-              {scope === 'drawn'
+              {scope === 'drawn' && featuredCards.length === 0
                 ? '当前还没有可聚焦的抽牌结果，先完成一次抽牌，或切换到完整牌库。'
                 : '没有找到匹配的牌，试试换一个关键词。'}
             </p>
@@ -283,7 +286,12 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
               </div>
             </div>
           </article>
-        ) : null}
+        ) : (
+          <div className="encyclopedia-detail encyclopedia-detail--empty" role="status">
+            <h3>暂无可显示的牌卡</h3>
+            <p>请调整搜索词或筛选条件，或切换到完整牌库。</p>
+          </div>
+        )}
       </div>
     </section>
   )

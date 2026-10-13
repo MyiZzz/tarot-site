@@ -95,7 +95,7 @@ describe('RecordCenter filters and compare', () => {
     expect(screen.getByText('Record recent')).toBeInTheDocument()
     expect(screen.queryByText('Record old')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /compare/i }))
+    await user.click(screen.getByRole('button', { name: '加入对比' }))
     expect(onToggleCompare).toHaveBeenCalledWith('recent')
   })
 
