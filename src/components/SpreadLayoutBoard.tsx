@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import type { PositionReading, ReadingCardView, ResolvedSpreadDefinition } from '../domain/tarot'
 import { buildSpreadStageLayout, getBoardMetaForSpread } from '../lib/spreadBoardLayout'
 import { TarotCardFigure } from './TarotCardFigure'
@@ -19,11 +19,24 @@ export function SpreadLayoutBoard({
   revealedPositions,
   onReveal,
 }: SpreadLayoutBoardProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [stageScale, setStageScale] = useState(1)
   const boardMeta = useMemo(() => getBoardMetaForSpread(spread), [spread])
   const stageLayout = useMemo(
     () => buildSpreadStageLayout(boardMeta, revealedPositions),
     [boardMeta, revealedPositions],
   )
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry.contentRect.width > 0) {
+        setStageScale(Math.min(1, entry.contentRect.width / stageLayout.stageWidth))
+      }
+    })
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [stageLayout.stageWidth])
   const cardMap = useMemo(
     () => Object.fromEntries(stageLayout.cards.map((entry) => [entry.key, entry])),
     [stageLayout.cards],
@@ -39,11 +52,12 @@ export function SpreadLayoutBoard({
 
   return (
     <div className="spread-board-shell">
-      <div className="spread-board-scroll" role="region" aria-label="牌阵桌面" tabIndex={0}>
+      <div className="spread-board-scroll" ref={scrollRef} role="region" aria-label="牌阵桌面" tabIndex={0}>
         <div
           className="spread-board-stage"
           style={
             {
+              '--stage-scale': stageScale,
               '--stage-width': `${stageLayout.stageWidth}px`,
               '--stage-height': `${stageLayout.stageHeight}px`,
               '--board-left': `${stageLayout.boardLeft}px`,
@@ -75,6 +89,7 @@ export function SpreadLayoutBoard({
                     } as CSSProperties
                   }
                 >
+                  <span className="spread-board__mobile-label">牌位 · {entry.positionLabel}</span>
                   <TarotCardFigure
                     art={entry.art}
                     card={entry.card}

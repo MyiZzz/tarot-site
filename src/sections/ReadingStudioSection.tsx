@@ -20,6 +20,7 @@ type StudioVariantSelection = {
 }
 
 interface ReadingStudioSectionProps {
+  readingReady?: boolean
   canDraw: boolean
   drawNotice: string | null
   isShuffling: boolean
@@ -67,6 +68,7 @@ const QUESTION_SUGGESTIONS: Record<TopicId, string[]> = {
 }
 
 export function ReadingStudioSection({
+  readingReady = false,
   canDraw,
   drawNotice,
   isShuffling,
@@ -92,6 +94,8 @@ export function ReadingStudioSection({
   const meaningHint = selectedTopic?.meaningHint?.trim() || null
   const selectedGuide = selectedVariant?.guide ?? selectedSpread?.guide ?? null
 
+  const currentStep = !question.trim() || !topic ? 0 : !selectedSpread ? 1 : readingReady && !isShuffling ? 3 : 2
+
   return (
     <section
       aria-busy={isShuffling}
@@ -110,6 +114,14 @@ export function ReadingStudioSection({
         </span>
       </div>
 
+      <ol className="reading-progress" aria-label="占卜步骤">
+        {['提出问题', '选择牌阵', '洗牌抽牌', '阅读指引'].map((label, index) => (
+          <li key={label} aria-current={currentStep === index ? 'step' : undefined} className={index < currentStep ? 'is-complete' : ''}>
+            <span aria-hidden="true">{index < currentStep ? '✓' : `0${index + 1}`}</span>
+            {label}
+          </li>
+        ))}
+      </ol>
       <label className="question-field">
         <span>占卜问题</span>
         <textarea
@@ -141,6 +153,7 @@ export function ReadingStudioSection({
           {TOPICS.map((entry) => (
             <button
               key={entry.id}
+              aria-pressed={topic === entry.id}
               aria-label={entry.label}
               className={`pill ${topic === entry.id ? 'is-active' : ''}`}
               type="button"
@@ -188,6 +201,7 @@ export function ReadingStudioSection({
         </article>
       ) : null}
 
+      <h3 className="studio-step-title">选择适合你的牌阵</h3>
       <div className="spread-grid">
         {SPREADS.map((spread) => {
           const previewPositions = getSpreadPreviewPositions(
@@ -201,6 +215,7 @@ export function ReadingStudioSection({
           return (
             <button
               key={spread.id}
+              aria-pressed={spreadId === spread.id}
               aria-label={spread.id === 'daily-energy' ? '每日一张牌阵' : spread.title}
               className={`spread-card ${spreadId === spread.id ? 'is-active' : ''}`}
               type="button"
@@ -247,6 +262,7 @@ export function ReadingStudioSection({
             {selectedVariants.map((entry) => (
               <button
                 key={entry.id}
+                aria-pressed={variantId === entry.id}
                 className={`pill ${variantId === entry.id ? 'is-active' : ''}`}
                 type="button"
                 onClick={() => onSelectVariant(entry.id)}
@@ -269,10 +285,13 @@ export function ReadingStudioSection({
         </div>
 
         <div className="draw-summary__actions">
-          <button className="primary-button" disabled={!canDraw} type="button" onClick={onDraw}>
+          <button className="primary-button" disabled={!canDraw || isShuffling} aria-describedby="draw-guidance" type="button" onClick={onDraw}>
             {needsReDrawConfirm ? '再次点击确认重抽' : '洗牌并抽牌'}
           </button>
         </div>
+        <p id="draw-guidance" className="draw-guidance" role="status">
+          {isShuffling ? '正在洗牌，请稍候，感受此刻的问题…' : !question.trim() ? '先写下你的问题，或选择一个提问示例。' : !topic ? '选择一个主题，让指引更贴近你的问题。' : !selectedSpread ? '选择一个牌阵，即可开始抽牌。' : '准备好了。深呼吸，让牌面为你打开新的视角。'}
+        </p>
         <StatusMessage message={drawNotice} />
         <p className="selection-note">
           重抽规则：同一问题在 30 秒内重复抽牌时，会先提示确认，避免无意识反复重抽。

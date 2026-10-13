@@ -278,7 +278,9 @@ function App({ shuffleDelayMs }: AppProps) {
       type="button"
       onClick={() => {
         setNavSection(item.id)
-        scrollToSection(item.id)
+        // Jump directly to distant sections so intermediate lazy content cannot
+        // shift the destination during a smooth scroll.
+        document.getElementById(item.id)?.scrollIntoView({ behavior: 'instant', block: 'start' })
       }}
     >
       <span className="stitch-nav-button__label">{item.label}</span>
@@ -296,6 +298,7 @@ function App({ shuffleDelayMs }: AppProps) {
         onChange={handleImportRecords}
       />
 
+      <a className="skip-link" href="#main-content">跳至主要内容</a>
       <header className="stitch-topbar">
         <div className="stitch-topbar__inner">
           <div className="stitch-brand">
@@ -318,21 +321,26 @@ function App({ shuffleDelayMs }: AppProps) {
         </nav>
       </aside>
 
-      <main className="stitch-main">
+      <main className="stitch-main" id="main-content">
         <div className="layout stitch-layout">
           <section className="panel stitch-hero" aria-label="首页引导">
             <div className="stitch-hero__text">
               <p className="eyebrow">Tarot Salon</p>
               <RevealText as="h1" className="hero__title" text="把抽到的 78 张牌，真正铺上桌面。" />
               <p className="hero__lede">
-                浮世塔罗把每日一张、深度牌阵、记录归档、追问与分享海报接成一条完整的解读动线。
+                静下心，带着一个问题出发。在牌面的隐喻里，看清此刻，找到下一步。
               </p>
               <div className="hero__meta">
                 <span>78 张独立牌面</span>
                 <span>11 套牌阵</span>
-                <span>{storageBackend === 'indexeddb' ? 'IndexedDB 记录中心' : '本地记录中心'}</span>
+                <span>本地私密记录</span>
                 <span>PNG 海报导出</span>
               </div>
+            </div>
+            <div className="hero-orbit" aria-hidden="true">
+              <span className="hero-orbit__star">✦</span>
+              <span className="hero-orbit__moon">☾</span>
+              <span className="hero-orbit__caption">AS ABOVE · SO BELOW</span>
             </div>
             <div className="stitch-hero__cta">
               <button
@@ -371,6 +379,7 @@ function App({ shuffleDelayMs }: AppProps) {
           />
 
           <ReadingStudioSection
+            readingReady={Boolean(readingSession.reading)}
             canDraw={readingSession.canDraw}
             drawNotice={readingSession.drawNotice}
             isShuffling={readingSession.isShuffling}
