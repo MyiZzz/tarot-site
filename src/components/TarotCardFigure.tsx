@@ -75,15 +75,15 @@ export function TarotCardFigure({
   const imageAsset = CARD_IMAGE_ASSET_BY_ID[card.id]
   const shouldShowArtwork =
     imageProfile !== 'minimal' && Boolean(art.imageUrl && imageAsset)
-  const imageSizes =
-    imageProfile === 'thumb'
-      ? '(max-width: 768px) 120px, 160px'
-      : '(max-width: 768px) 200px, 320px'
+  // Lazy images can use their rendered width; retain estimates for older browsers.
+  const imageSizes = imageProfile === 'thumb'
+    ? 'auto, (max-width: 768px) 120px, 160px'
+    : 'auto, (max-width: 768px) 200px, 320px'
   const fallbackSrc = imageProfile === 'thumb'
     ? imageAsset?.thumbnailJpgUrl
     : imageAsset?.detailJpgUrl ?? art.imageUrl
   const fallbackSrcSet = imageAsset
-    ? `${imageAsset.thumbnailJpgUrl} 240w, ${imageAsset.detailJpgUrl} 720w`
+    ? `${imageAsset.thumbnailJpgUrl} 240w, ${imageAsset.detailJpgUrl} ${imageAsset.width}w`
     : undefined
   const webpSrcSet = imageAsset
     ? `${imageAsset.thumbnailWebpUrl} 240w, ${imageAsset.detailWebpUrl} 720w`
@@ -94,6 +94,7 @@ export function TarotCardFigure({
       <Tag
         className={classNameValue}
         data-testid={testId}
+        aria-label={interactive && !revealed ? `揭晓牌面：${label ?? '塔罗牌'}` : undefined}
         type={interactive ? 'button' : undefined}
         onClick={interactive ? onClick : undefined}
       >
@@ -108,16 +109,17 @@ export function TarotCardFigure({
     <Tag
       className={classNameValue}
       data-testid={testId}
+      aria-label={interactive && !revealed ? `揭晓牌面：${label ?? '塔罗牌'}` : undefined}
       type={interactive ? 'button' : undefined}
       onClick={interactive ? onClick : undefined}
     >
       <div className="tarot-card-figure__inner">
-        <div className="tarot-card-figure__face tarot-card-figure__face--back">
+        <div className="tarot-card-figure__face tarot-card-figure__face--back" aria-hidden="true">
           <span className="tarot-card-figure__back-mark">UKIYO</span>
           <span className="tarot-card-figure__back-sub">TAROT ARCHIVE</span>
         </div>
 
-        <div className="tarot-card-figure__face tarot-card-figure__face--front">
+        <div className="tarot-card-figure__face tarot-card-figure__face--front" aria-hidden={!revealed}>
           <div className="tarot-card-figure__header">
             <span>{card.nameZh}</span>
           </div>
@@ -136,7 +138,10 @@ export function TarotCardFigure({
                     src={fallbackSrc}
                     srcSet={fallbackSrcSet}
                     sizes={imageSizes}
-                    alt={`${card.nameEn} artwork`}
+                    alt={`${card.nameZh}（${card.nameEn}）牌面`}
+                    width={imageAsset?.width}
+                    height={imageAsset?.height}
+                    decoding="async"
                     loading="lazy"
                   />
                 </picture>

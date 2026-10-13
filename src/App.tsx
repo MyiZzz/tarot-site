@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react'
 import './App.css'
+import { scrollToSection } from './lib/scroll'
 import { GuidePanel } from './components/GuidePanel'
 import { LazySection } from './components/LazySection'
 import { RevealText } from './components/RevealText'
@@ -22,7 +23,7 @@ import { useDailyReadingState } from './hooks/useDailyReadingState'
 import { usePersistentRecords } from './hooks/usePersistentRecords'
 import { FOLLOW_UP_SUGGESTIONS, useReadingSession } from './hooks/useReadingSession'
 import { formatLocalFileDate } from './lib/localDate'
-import { buildReadingShareText, downloadPosterPng, shareText } from './lib/share'
+import { buildReadingShareText, shareText } from './lib/share'
 import { DailyPanel } from './sections/DailyPanel'
 import { ReadingResultSection } from './sections/ReadingResultSection'
 import { ReadingStudioSection } from './sections/ReadingStudioSection'
@@ -56,19 +57,6 @@ const NAV_ITEMS: Array<{ id: NavSection; label: string; subtitle: string }> = [
   { id: 'records', label: '记录中心', subtitle: 'Record Center' },
   { id: 'encyclopedia', label: '牌卡百科', subtitle: 'Card Encyclopedia' },
 ]
-
-const scrollToSection = (sectionId: string) => {
-  const section = document.getElementById(sectionId)
-
-  if (typeof section?.scrollIntoView !== 'function') {
-    return
-  }
-
-  section.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start',
-  })
-}
 
 const LazySectionFallback = ({
   id,
@@ -197,7 +185,7 @@ function App({ shuffleDelayMs }: AppProps) {
 
   const handleDownloadDailyPoster = async () => {
     try {
-      const message = await downloadPosterPng(
+      const message = await (await import('./lib/poster')).downloadPosterPng(
         {
           title: `每日一张 · ${dailyLabel}`,
           question: dailyReading.input.question,

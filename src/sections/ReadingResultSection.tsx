@@ -1,8 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { TOPIC_BY_ID } from '../data/topics'
 import type { ReadingResult } from '../domain/tarot'
 import { StatusMessage } from '../components/StatusMessage'
 import { RevealText } from '../components/RevealText'
-import { SpreadLayoutBoard } from '../components/SpreadLayoutBoard'
+
+const SpreadLayoutBoard = lazy(async () => {
+  const module = await import('../components/SpreadLayoutBoard')
+  return { default: module.SpreadLayoutBoard }
+})
 
 type ReportSection = {
   id: string
@@ -179,13 +184,15 @@ export function ReadingResultSection({
           </div>
           <StatusMessage className="selection-note result-actions__notice" message={shareMessage} />
 
-          <SpreadLayoutBoard
-            cards={reading.cards}
-            onReveal={onReveal}
-            positionReadings={reading.positionReadings}
-            revealedPositions={revealedPositions}
-            spread={reading.spread}
-          />
+          <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
+            <SpreadLayoutBoard
+              cards={reading.cards}
+              onReveal={onReveal}
+              positionReadings={reading.positionReadings}
+              revealedPositions={revealedPositions}
+              spread={reading.spread}
+            />
+          </Suspense>
 
           <div className="result-grid">
             {reportSections.length > 0 ? (

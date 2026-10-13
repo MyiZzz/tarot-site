@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { TAROT_DECK } from '../data/cards'
@@ -98,7 +98,7 @@ const reading: ReadingResult = {
 }
 
 describe('ReadingResultSection', () => {
-  it('keeps follow-up exploration collapsed by default and exposes icon-only secondary actions', () => {
+  it('keeps follow-up exploration collapsed by default and exposes icon-only secondary actions', async () => {
     const { container } = render(
       <ReadingResultSection
         actionPlanDoneIds={[]}
@@ -124,13 +124,15 @@ describe('ReadingResultSection', () => {
       />,
     )
 
+    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+
     expect(container.querySelector('.result-actions__primary')).toBeInTheDocument()
     expect(container.querySelectorAll('.ghost-button--icon-only')).toHaveLength(2)
     expect(screen.getByTestId('follow-up-accordion')).not.toHaveAttribute('open')
     expect(screen.getByTestId('deep-signals-panel')).toBeInTheDocument()
   })
 
-  it('keeps the archive inputs writable through the existing handlers', () => {
+  it('keeps the archive inputs writable through the existing handlers', async () => {
     const onRecordTitleChange = vi.fn()
     const onRecordTagsChange = vi.fn()
     const { container } = render(
@@ -158,6 +160,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
+    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+
     const inputs = container.querySelectorAll<HTMLInputElement>('input[type="text"]')
 
     fireEvent.change(inputs[0]!, {
@@ -171,7 +175,7 @@ describe('ReadingResultSection', () => {
     expect(onRecordTagsChange).toHaveBeenCalledWith('relationship pacing')
   })
 
-  it('renders the fixed five-part report structure when present', () => {
+  it('renders the fixed five-part report structure when present', async () => {
     render(
       <ReadingResultSection
         actionPlanDoneIds={[]}
@@ -197,6 +201,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
+    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+
     expect(screen.getByText('核心结论')).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.coreConclusion)).toBeInTheDocument()
     expect(screen.getByText('当前状态')).toBeInTheDocument()
@@ -210,7 +216,7 @@ describe('ReadingResultSection', () => {
     expect(screen.getByText('完整解读')).toBeInTheDocument()
   })
 
-  it('only lists revealed cards and uses their generated position readings', () => {
+  it('only lists revealed cards and uses their generated position readings', async () => {
     const { container, rerender } = render(
       <ReadingResultSection
         actionPlanDoneIds={[]}
@@ -235,6 +241,8 @@ describe('ReadingResultSection', () => {
         shareMessage={null}
       />,
     )
+
+    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
 
     const readingList = container.querySelector<HTMLDivElement>('.spread-board__reading-list')!
     expect(readingList).toBeEmptyDOMElement()
@@ -263,6 +271,8 @@ describe('ReadingResultSection', () => {
         shareMessage={null}
       />,
     )
+
+    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
 
     expect(within(readingList).getByText(reading.positionReadings[0]!.message)).toBeInTheDocument()
   })

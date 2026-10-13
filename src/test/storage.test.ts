@@ -140,7 +140,7 @@ describe('reading storage', () => {
 
     const first = buildDailyRecord(
       daily,
-      new Date('2026-03-08T08:00:00+08:00'),
+      new Date(2026, 2, 8, 0, 30),
       {
         morningIntent: '保持专注',
         eveningReview: '',
@@ -149,7 +149,7 @@ describe('reading storage', () => {
     )
     const second = buildDailyRecord(
       daily,
-      new Date('2026-03-08T21:00:00+08:00'),
+      new Date(2026, 2, 8, 23, 30),
       {
         morningIntent: '保持专注',
         eveningReview: '确实有帮助。',
@@ -157,7 +157,12 @@ describe('reading storage', () => {
       },
     )
 
-    expect(first.id).toBe(second.id)
+    expect(first.id).toBe('daily-2026-03-08')
+    expect(second.id).toBe(first.id)
+    expect(buildDailyRecord(daily, new Date(2026, 2, 9, 0, 0)).id).toBe(
+      'daily-2026-03-09',
+    )
+    expect(first.createdAt).toBe(new Date(2026, 2, 8, 0, 30).toISOString())
     expect(second.dailyReflection.eveningReview).toContain('帮助')
   })
   it('serializes and parses record exports while preserving normalized order', () => {

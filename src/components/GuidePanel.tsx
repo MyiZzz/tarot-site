@@ -100,6 +100,7 @@ export function GuidePanel({ dismissed, guide, onDismiss, onRestore }: GuidePane
             <div
               className="guide-progress__bar"
               role="progressbar"
+              aria-label={guideContent.title}
               aria-valuemin={1}
               aria-valuemax={guideContent.steps.length}
               aria-valuenow={boundedStepIndex + 1}
