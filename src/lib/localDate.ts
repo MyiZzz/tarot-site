@@ -11,3 +11,11 @@ export const getMillisecondsUntilNextLocalDay = (date: Date = new Date()) => {
 
   return nextDay.getTime() - date.getTime()
 }
+
+export const formatDailyLabel = (date: Date = new Date()) =>
+  new Intl.DateTimeFormat('zh-CN', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  }).format(date)
+

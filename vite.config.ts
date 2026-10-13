@@ -31,6 +31,18 @@ export default defineConfig({
       },
     },
   ],
+  build: {
+    manifest: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
+            return 'react-vendor'
+          }
+        },
+      },
+    },
+  },
   test: {
     // Bound jsdom CPU/memory pressure on shared CI runners.
     maxWorkers: 2,

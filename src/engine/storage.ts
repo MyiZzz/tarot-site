@@ -64,7 +64,7 @@ const hashContent = (value: string) => {
   return hash.toString(36)
 }
 
-export const normalizeReadingRecords = (records: ReadingRecord[]) =>
+const normalizeReadingRecords = (records: ReadingRecord[]) =>
   records
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
     .slice(0, MAX_RECORDS)
@@ -499,7 +499,7 @@ export const buildReadingRecordId = (reading: ReadingResult) =>
     ].join('|'),
   )}`
 
-export const buildDailyRecordId = (date: Date) => {
+const buildDailyRecordId = (date: Date) => {
   return `daily-${buildLocalDateKey(date)}`
 }
 

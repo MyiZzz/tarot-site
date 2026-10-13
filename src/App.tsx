@@ -97,6 +97,8 @@ function App({ shuffleDelayMs }: AppProps) {
   } = usePersistentRecords()
 
   const {
+    loadError: dailyLoadError,
+    retryLoad: retryDailyLoad,
     dailyDate,
     dailyLabel,
     dailyMessage,
@@ -122,10 +124,10 @@ function App({ shuffleDelayMs }: AppProps) {
       Array.from(
         new Set([
           ...(readingSession.reading?.cards.map((entry) => entry.card.id) ?? []),
-          ...(dailyRevealed ? [dailyReading.cards[0].card.id] : []),
+          ...(dailyRevealed && dailyReading ? [dailyReading.cards[0].card.id] : []),
         ]),
       ),
-    [dailyReading.cards, dailyRevealed, readingSession.reading],
+    [dailyReading, dailyRevealed, readingSession.reading],
   )
 
   useEffect(() => {
@@ -159,10 +161,10 @@ function App({ shuffleDelayMs }: AppProps) {
     })
 
     return () => observer.disconnect()
-  }, [storageReady])
+  }, [storageReady, dailyReading])
 
   const handleRevealDaily = () => {
-    if (dailyRevealed) {
+    if (dailyRevealed || !dailyReading) {
       return
     }
 
@@ -172,6 +174,7 @@ function App({ shuffleDelayMs }: AppProps) {
   }
 
   const handleShareDaily = async () => {
+    if (!dailyReading) return
     try {
       const message = await shareText(
         '浮世塔罗 · 每日一张',
@@ -184,6 +187,7 @@ function App({ shuffleDelayMs }: AppProps) {
   }
 
   const handleDownloadDailyPoster = async () => {
+    if (!dailyReading) return
     try {
       const message = await (await import('./lib/poster')).downloadPosterPng(
         {
@@ -344,7 +348,7 @@ function App({ shuffleDelayMs }: AppProps) {
             </div>
           </section>
 
-          <DailyPanel
+          {dailyReading ? <DailyPanel
             dailyLabel={dailyLabel}
             dailyMessage={dailyMessage}
             dailyRevealed={dailyRevealed}
@@ -352,7 +356,13 @@ function App({ shuffleDelayMs }: AppProps) {
             onDownloadPoster={handleDownloadDailyPoster}
             onReveal={handleRevealDaily}
             onShare={handleShareDaily}
-          />
+          /> : dailyLoadError ? (
+            <section className="panel section" id="daily">
+              <h2>今日指引</h2>
+              <p role="alert">{dailyLoadError}</p>
+              <button type="button" onClick={retryDailyLoad}>重试</button>
+            </section>
+          ) : <LazySectionFallback id="daily" title="今日指引" />}
 
           <GuidePanel
             dismissed={guideDismissed}
