@@ -209,7 +209,8 @@ npm run test:e2e
 - `src/lib`：日期、分享、布局等辅助逻辑
 - `src/test`：Vitest 单元与组件测试
 - `tests/e2e`：Playwright 浏览器流测试
-- `public/cards/rws`：牌面资源与衍生图
+- `assets-src/cards/rws`：原始牌面与来源说明（不参与发布）
+- `public/cards/rws`：240/480px AVIF、WebP 与 240px JPEG 衍生图
 - `scripts/generate-optimized-assets.mjs`：资源衍生图生成脚本
 
 ## 架构说明
@@ -225,7 +226,7 @@ npm run test:e2e
 - 不提供账号、支付、订阅、云同步
 - 当前偏向浏览器端单人使用场景
 - 每日揭晓状态属于当前会话状态，刷新页面后会重置
-- 资源衍生图生成不是 `build` 的默认步骤，需要按需手动执行 `npm run assets:optimize`
+- `build` 会自动增量生成衍生图；也可手动执行 `npm run assets:optimize`。小体积衍生图纳入版本控制，开发无需预先构建。
 
 ## 文档
 
@@ -234,3 +235,7 @@ npm run test:e2e
 ## License
 
 本仓库使用 [MIT License](./LICENSE)。
+
+构建会生成轻量 PWA：缓存应用代码和已查看的牌面（最多 100 个资源），不会预下载整副牌。离线时未缓存的牌面显示占位图；新版本会在旧标签页关闭后接管，避免打断正在填写的内容。
+
+构建使用 `SITE_URL=https://your-production-origin/ npm run build` 生成首页 sitemap 和 robots 中的 sitemap 地址（支持子路径）。未设置 `SITE_URL` 时仍生成 robots.txt 与空 sitemap.xml，不猜测正式域名。安装图标由现有 favicon 在 `assets:optimize` 中生成。

@@ -13,14 +13,14 @@ export interface BoardMeta {
   coordinates: LayoutCoordinate[]
 }
 
-export interface LayoutRect {
+interface LayoutRect {
   left: number
   right: number
   top: number
   bottom: number
 }
 
-export interface BoardCardLayout extends LayoutCoordinate {
+interface BoardCardLayout extends LayoutCoordinate {
   centerX: number
   centerY: number
   width: number
@@ -28,9 +28,9 @@ export interface BoardCardLayout extends LayoutCoordinate {
   rect: LayoutRect
 }
 
-export type CaptionSide = 'top' | 'right' | 'bottom' | 'left'
+type CaptionSide = 'top' | 'right' | 'bottom' | 'left'
 
-export interface BoardCaptionLayout {
+interface BoardCaptionLayout {
   key: string
   side: CaptionSide
   centerX: number
@@ -183,7 +183,7 @@ const optimizeCardCoordinates = (
     }
   }
 
-  let minDistance = Number.POSITIVE_INFINITY
+  let separationScale = 1
   for (let index = 0; index < nodes.length; index += 1) {
     for (let next = index + 1; next < nodes.length; next += 1) {
       const left = nodes[index]
@@ -193,14 +193,17 @@ const optimizeCardCoordinates = (
         continue
       }
 
-      minDistance = Math.min(minDistance, Math.hypot(left.xPx - right.xPx, left.yPx - right.yPx))
+      const leftBounds = getRotatedBounds(slotWidth, slotHeight, left.rotation)
+      const rightBounds = getRotatedBounds(slotWidth, slotHeight, right.rotation)
+      // Either axis must separate the full rotated rectangles, with breathing room.
+      const scaleX = Math.abs(left.xPx - right.xPx) / ((leftBounds.width + rightBounds.width) / 2 + 16)
+      const scaleY = Math.abs(left.yPx - right.yPx) / ((leftBounds.height + rightBounds.height) / 2 + 16)
+      separationScale = Math.min(separationScale, Math.max(scaleX, scaleY))
     }
   }
 
   const densityScale = clampValue(1 - Math.max(0, nodes.length - 5) * 0.012, 0.84, 1)
-  const distanceScale =
-    minDistance === Number.POSITIVE_INFINITY ? 1 : clampValue(minDistance / (slotWidth * 0.92), 0.78, 1)
-  const cardScale = Math.min(densityScale, distanceScale)
+  const cardScale = Math.min(densityScale, separationScale)
 
   return {
     cardScale,

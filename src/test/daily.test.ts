@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildDailySeed, createDailyReading, formatDailyLabel } from '../lib/daily'
+import { buildDailySeed, createDailyReading } from '../lib/daily'
+import { formatDailyLabel } from '../lib/localDate'
 
 describe('daily tarot helpers', () => {
   it('creates a stable daily seed for the same date', () => {

@@ -1,79 +1,78 @@
-import { mkdir, readdir } from 'node:fs/promises'
-import { join, basename } from 'node:path'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
-const rootDir = process.cwd()
-const cardsDir = join(rootDir, 'public', 'cards', 'rws')
-const thumbJpgDir = join(cardsDir, 'thumb-jpg')
-const thumbWebpDir = join(cardsDir, 'thumb-webp')
-const detailWebpDir = join(cardsDir, 'detail-webp')
-const ogCoverPath = join(rootDir, 'public', 'og-cover.png')
+const root = fileURLToPath(new URL('../', import.meta.url))
+const sourceDir = join(root, 'assets-src/cards/rws')
+const outputDir = join(root, 'public/cards/rws')
+const cachePath = join(root, 'assets-src/generated-assets.json')
+const widths = [240, 480, 768]
+// The high-density detail candidate uses AVIF to keep the full deck under budget.
+const formatsFor = (width) => width === 768 ? ['avif'] : ['avif', 'webp']
+const hash = (data) => createHash('sha256').update(data).digest('hex')
+const pipelineHash = hash(await readFile(fileURLToPath(import.meta.url))) + JSON.stringify(sharp.versions)
+const previous = JSON.parse(await readFile(cachePath, 'utf8').catch(() => '{}'))
+const next = {}
+const dimensions = {}
+const versions = {}
+let generated = 0
 
-const ensureDirectories = async () => {
-  await Promise.all([
-    mkdir(thumbJpgDir, { recursive: true }),
-    mkdir(thumbWebpDir, { recursive: true }),
-    mkdir(detailWebpDir, { recursive: true }),
-  ])
+// Content hashes survive checkouts: committed derivatives need no expensive re-encoding.
+const isCurrent = async (key, fingerprint, outputs) =>
+  previous[key] === fingerprint && (await Promise.all(outputs.map(async (path) =>
+    stat(path).then((info) => info.size > 0).catch(() => false),
+  ))).every(Boolean)
+
+await mkdir(outputDir, { recursive: true })
+const files = (await readdir(sourceDir)).filter((name) => name.endsWith('.jpg')).sort()
+// Encode one card at a time to bound memory/CPU use on developer machines and CI.
+for (const file of files) {
+  const id = file.slice(0, -4)
+  const input = await readFile(join(sourceDir, file))
+  const fingerprint = hash(input) + pipelineHash
+  const fallbackPath = join(outputDir, `${id}.jpg`)
+  const outputs = [fallbackPath, ...widths.flatMap((width) =>
+    formatsFor(width).map((format) => join(outputDir, `${id}-${width}.${format}`)),
+  )]
+  if (!await isCurrent(id, fingerprint, outputs)) {
+    for (const width of widths) {
+      // Mild smoothing suppresses scanned paper grain before encoding.
+      const resized = sharp(input).resize({ width }).blur(0.6)
+      await resized.clone().avif({ quality: width === 768 ? 20 : 35, effort: 4 }).toFile(join(outputDir, `${id}-${width}.avif`))
+      if (width !== 768) await resized.clone().webp({ quality: 30, effort: 5 }).toFile(join(outputDir, `${id}-${width}.webp`))
+    }
+    await sharp(input).resize({ width: 240 }).jpeg({ mozjpeg: true, quality: 60 }).toFile(fallbackPath)
+    generated++
+  }
+  // Hash shipped bytes, including every format/size, so derivative fixes invalidate caches.
+  versions[id] = hash(Buffer.concat(await Promise.all(outputs.map((path) => readFile(path))))).slice(0, 16)
+  const metadata = await sharp(fallbackPath).metadata()
+  dimensions[id] = [metadata.width, metadata.height]
+  next[id] = fingerprint
 }
 
-const optimizeCards = async () => {
-  const entries = await readdir(cardsDir, { withFileTypes: true })
-  const sourceFiles = entries
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.jpg'))
-    .map((entry) => entry.name)
-
-  await Promise.all(
-    sourceFiles.map(async (fileName) => {
-      const sourcePath = join(cardsDir, fileName)
-      const fileStem = basename(fileName, '.jpg')
-
-      await sharp(sourcePath)
-        .resize({ width: 240, withoutEnlargement: true })
-        .jpeg({ mozjpeg: true, quality: 68 })
-        .toFile(join(thumbJpgDir, `${fileStem}.jpg`))
-
-      await sharp(sourcePath)
-        .resize({ width: 240, withoutEnlargement: true })
-        .webp({ quality: 72 })
-        .toFile(join(thumbWebpDir, `${fileStem}.webp`))
-
-      await sharp(sourcePath)
-        .resize({ width: 720, withoutEnlargement: true })
-        .webp({ quality: 78 })
-        .toFile(join(detailWebpDir, `${fileStem}.webp`))
-    }),
-  )
+const ogInput = await readFile(join(root, 'assets-src/og-cover.png'))
+const ogPath = join(root, 'public/og-cover.png')
+next.og = hash(ogInput) + pipelineHash
+if (!await isCurrent('og', next.og, [ogPath])) {
+  await sharp(ogInput).png({ palette: true, quality: 85, effort: 10 }).toFile(ogPath)
 }
 
-const generateOgCover = async () => {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
-      <defs>
-        <linearGradient id="bg" x1="84" y1="48" x2="1124" y2="610" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#19324A"/>
-          <stop offset="0.48" stop-color="#0F1C29"/>
-          <stop offset="1" stop-color="#231018"/>
-        </linearGradient>
-        <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(920 120) rotate(146) scale(380 280)">
-          <stop stop-color="#D7A34F" stop-opacity="0.36"/>
-          <stop offset="1" stop-color="#D7A34F" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
-      <rect width="1200" height="630" rx="36" fill="url(#glow)"/>
-      <rect x="36" y="36" width="1128" height="558" rx="28" stroke="rgba(255,238,205,0.18)"/>
-      <text x="84" y="128" fill="#E4C98A" font-size="32" font-family="'Times New Roman', serif" letter-spacing="6">UKIYO TAROT SALON</text>
-      <text x="84" y="242" fill="#F7F0DE" font-size="84" font-family="'Times New Roman', serif">浮世塔罗</text>
-      <text x="84" y="322" fill="#DFE8F8" font-size="34" font-family="'Times New Roman', serif">把抽到的 78 张牌，真正铺上桌面。</text>
-      <text x="84" y="402" fill="#CAD5E5" font-size="28" font-family="'Times New Roman', serif">每日一张 · 深度牌阵 · 记录归档 · PNG 海报</text>
-      <text x="84" y="534" fill="#BFC9D9" font-size="24" font-family="'Times New Roman', serif">以牌为镜，以行动落地。</text>
-    </svg>
-  `
-
-  await sharp(Buffer.from(svg)).png().toFile(ogCoverPath)
+const writeIfChanged = async (path, content) => {
+  if (await readFile(path, 'utf8').catch(() => '') !== content) await writeFile(path, content)
 }
+await writeIfChanged(join(root, 'src/data/cardImageDimensions.ts'),
+  '// Generated by npm run assets:optimize. Dimensions of the shipped JPEG fallbacks.\n' +
+  'export const CARD_IMAGE_DIMENSIONS_BY_ID: Record<string, readonly [number, number]> = ' +
+  JSON.stringify(dimensions, null, 2) + '\n\n' +
+  'export const CARD_IMAGE_VERSION_BY_ID: Record<string, string> = ' +
+  JSON.stringify(versions, null, 2) + '\n',
+)
+await writeIfChanged(cachePath, JSON.stringify(next, null, 2) + '\n')
+console.log(`Card assets: ${generated} generated, ${files.length - generated} unchanged.`)
 
-await ensureDirectories()
-await optimizeCards()
-await generateOgCover()
+for (const size of [192, 512]) {
+  await sharp(join(root, 'public/favicon.svg')).resize(size, size).png().toFile(join(root, `public/icon-${size}.png`))
+}

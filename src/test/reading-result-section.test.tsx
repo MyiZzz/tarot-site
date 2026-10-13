@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { TAROT_DECK } from '../data/cards'
@@ -124,12 +124,17 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     expect(container.querySelector('.result-actions__primary')).toBeInTheDocument()
     expect(container.querySelectorAll('.ghost-button--icon-only')).toHaveLength(2)
     expect(screen.getByTestId('follow-up-accordion')).not.toHaveAttribute('open')
     expect(screen.getByTestId('deep-signals-panel')).toBeInTheDocument()
+    for (const [name, target] of [['核心结论', 'core-conclusion'], ['逐牌解读', 'card-readings'], ['保存', 'save-reading']]) {
+      expect(screen.getByRole('link', { name })).toHaveAttribute('href', `#${target}`)
+      expect(document.getElementById(target)).toBeInTheDocument()
+    }
   })
 
   it('keeps the archive inputs writable through the existing handlers', async () => {
@@ -160,7 +165,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     const inputs = container.querySelectorAll<HTMLInputElement>('input[type="text"]')
 
@@ -201,9 +207,10 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
-    expect(screen.getByText('核心结论')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '核心结论' })).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.coreConclusion)).toBeInTheDocument()
     expect(screen.getByText('当前状态')).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.currentState)).toBeInTheDocument()
@@ -214,6 +221,7 @@ describe('ReadingResultSection', () => {
     expect(screen.getByText('回看问题')).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.reviewPrompt)).toBeInTheDocument()
     expect(screen.getByText('完整解读')).toBeInTheDocument()
+    expect(document.querySelector('.reading-details')).not.toHaveAttribute('open')
   })
 
   it('only lists revealed cards and uses their generated position readings', async () => {
@@ -242,7 +250,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     const readingList = container.querySelector<HTMLDivElement>('.spread-board__reading-list')!
     expect(readingList).toBeEmptyDOMElement()
@@ -272,7 +281,8 @@ describe('ReadingResultSection', () => {
       />,
     )
 
-    await waitFor(() => expect(document.querySelector('.spread-board-shell')).not.toBeNull())
+    await act(() => vi.dynamicImportSettled())
+    expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
     expect(within(readingList).getByText(reading.positionReadings[0]!.message)).toBeInTheDocument()
   })

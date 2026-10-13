@@ -86,7 +86,6 @@ describe('RecordCenter filters and compare', () => {
         query=""
         records={records}
         recordsMessage={null}
-        storageBackend="indexeddb"
         storageReady
         tagFilter="focus"
       />,
@@ -95,7 +94,7 @@ describe('RecordCenter filters and compare', () => {
     expect(screen.getByText('Record recent')).toBeInTheDocument()
     expect(screen.queryByText('Record old')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /compare/i }))
+    await user.click(screen.getByRole('button', { name: '加入对比' }))
     expect(onToggleCompare).toHaveBeenCalledWith('recent')
   })
 
@@ -129,13 +128,14 @@ describe('RecordCenter filters and compare', () => {
         query=""
         records={records}
         recordsMessage={null}
-        storageBackend="indexeddb"
         storageReady
         tagFilter=""
       />,
     )
 
-    expect(screen.getAllByText('当时主线').length).toBeGreaterThan(0)
+    expect(screen.queryByText('当时主线')).not.toBeInTheDocument()
+    expect(document.querySelector('.record-details')).not.toHaveAttribute('open')
+    expect(document.querySelector('.record-options--backup')!.compareDocumentPosition(document.querySelector('.record-grid')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getAllByText('这次阅读的主线是先稳住推进节奏。').length).toBeGreaterThan(0)
     expect(screen.getAllByText('风险提醒').length).toBeGreaterThan(0)
     expect(screen.getAllByText('风险提醒是不要把焦虑误当行动。').length).toBeGreaterThan(0)

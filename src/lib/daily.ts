@@ -6,13 +6,6 @@ export const buildDailySeed = (date: Date = new Date()) => {
   return `daily-${buildLocalDateKey(date)}`
 }
 
-export const formatDailyLabel = (date: Date = new Date()) =>
-  new Intl.DateTimeFormat('zh-CN', {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-  }).format(date)
-
 export const createDailyReading = (date: Date = new Date()): ReadingResult =>
   createReading(
     {

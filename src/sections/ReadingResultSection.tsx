@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { TOPIC_BY_ID } from '../data/topics'
 import type { ReadingResult } from '../domain/tarot'
+import { SectionErrorBoundary } from '../components/SectionErrorBoundary'
 import { StatusMessage } from '../components/StatusMessage'
 import { RevealText } from '../components/RevealText'
 
@@ -8,26 +9,6 @@ const SpreadLayoutBoard = lazy(async () => {
   const module = await import('../components/SpreadLayoutBoard')
   return { default: module.SpreadLayoutBoard }
 })
-
-type ReportSection = {
-  id: string
-  eyebrow?: string
-  title: string
-  body?: string
-  bullets?: string[]
-}
-
-type FixedReportSections = {
-  coreConclusion?: string
-  currentState?: string
-  riskAlert?: string
-  actionFocus?: string
-  reviewPrompt?: string
-}
-
-type ReadingResultWithSections = ReadingResult & {
-  reportSections?: ReportSection[] | FixedReportSections
-}
 
 interface ReadingResultSectionProps {
   actionPlanDoneIds: string[]
@@ -48,7 +29,7 @@ interface ReadingResultSectionProps {
   onShareReading: () => void
   onSubmitFollowUp: () => void
   onToggleActionPlan: (stepId: string) => void
-  reading: ReadingResultWithSections | null
+  reading: ReadingResult | null
   recordNotice: string | null
   recordTagsInput: string
   recordTitle: string
@@ -56,17 +37,7 @@ interface ReadingResultSectionProps {
   shareMessage: string | null
 }
 
-const normalizeReportSections = (reading: ReadingResultWithSections | null): ReportSection[] => {
-  if (!reading?.reportSections) {
-    return []
-  }
-
-  if (Array.isArray(reading.reportSections)) {
-    return reading.reportSections.filter(
-      (section) => section.title && (section.body?.trim() || section.bullets?.length),
-    )
-  }
-
+const getReportSections = (reading: ReadingResult) => {
   return [
     {
       id: 'core-conclusion',
@@ -93,7 +64,7 @@ const normalizeReportSections = (reading: ReadingResultWithSections | null): Rep
       title: '回看问题',
       body: reading.reportSections.reviewPrompt,
     },
-  ].filter((section) => section.body?.trim())
+  ]
 }
 
 export function ReadingResultSection({
@@ -118,7 +89,7 @@ export function ReadingResultSection({
   revealedPositions,
   shareMessage,
 }: ReadingResultSectionProps) {
-  const reportSections = normalizeReportSections(reading)
+  const allRevealed = reading?.cards.every((entry) => revealedPositions.includes(entry.drawn.positionKey)) ?? false
 
   return (
     <section className="panel section stitch-panel stitch-panel--result" id="result">
@@ -137,29 +108,17 @@ export function ReadingResultSection({
             <span>{TOPIC_BY_ID[reading.input.topic].label}</span>
             <span>{reading.spread.title}</span>
             {reading.spread.activeVariantTitle ? <span>{reading.spread.activeVariantTitle}</span> : null}
-            {reading.dominantSignals.map((signal, index) => (
-              <span key={`signal-${index}-${signal}`}>{signal}</span>
-            ))}
           </div>
-          {reading.interpretation.depthSignals.length > 0 ? (
-            <article className="result-panel result-panel--compact" data-testid="deep-signals-panel">
-              <p className="eyebrow">Deep Signals</p>
-              <h3>深度信号</h3>
-              <ul className="advice-list">
-                {reading.interpretation.depthSignals.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
-          ) : null}
+
 
           <div className="result-actions result-actions--primary">
             <button
               className="primary-button result-actions__primary"
               type="button"
-              onClick={onRevealAll}
+              aria-disabled={allRevealed}
+              onClick={allRevealed ? undefined : onRevealAll}
             >
-              全部揭晓
+              {allRevealed ? '已全部揭晓' : '全部揭晓'}
             </button>
             <div className="result-actions__secondary">
               <button
@@ -184,75 +143,51 @@ export function ReadingResultSection({
           </div>
           <StatusMessage className="selection-note result-actions__notice" message={shareMessage} />
 
-          <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
-            <SpreadLayoutBoard
-              cards={reading.cards}
-              onReveal={onReveal}
-              positionReadings={reading.positionReadings}
-              revealedPositions={revealedPositions}
-              spread={reading.spread}
-            />
-          </Suspense>
+          <nav className="reading-jumps" aria-label="解读导航">
+            <a href="#core-conclusion">核心结论</a>
+            <a href="#card-readings">逐牌解读</a>
+            <a href="#save-reading">保存</a>
+          </nav>
+          <div id="card-readings" tabIndex={-1}>
+            <SectionErrorBoundary title="牌阵桌面">
+              <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
+                <SpreadLayoutBoard
+                  cards={reading.cards}
+                  onReveal={onReveal}
+                  positionReadings={reading.positionReadings}
+                  revealedPositions={revealedPositions}
+                  spread={reading.spread}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
+          </div>
 
           <div className="result-grid">
-            {reportSections.length > 0 ? (
-              <>
-                {reportSections.map((section, index) => (
-                  <article
-                    key={section.id}
-                    className={`result-panel ${
-                      index === 0 ? 'result-panel--highlighted' : 'result-panel--wide'
-                    }`}
-                  >
-                    <div className="result-panel__stack">
-                      <p className="eyebrow">{section.eyebrow ?? 'Reading Report'}</p>
-                      <h3>{section.title}</h3>
-                      {section.body ? <p className="result-panel__summary">{section.body}</p> : null}
-                    </div>
-                    {section.bullets?.length ? (
-                      <>
-                        {section.body ? <div className="result-panel__divider" aria-hidden="true" /> : null}
-                        <div className="result-panel__stack">
-                          <h4>Key Points</h4>
-                          <ul className="advice-list">
-                            {section.bullets.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
-                    ) : null}
-                  </article>
-                ))}
-
-                <article className="result-panel result-panel--highlighted">
-                  <div className="result-panel__stack">
-                    <p className="eyebrow">Reading Report</p>
-                    <h3>完整解读</h3>
-                    <p className="result-panel__summary">{reading.deepNarrative}</p>
-                  </div>
-                </article>
-              </>
-            ) : (
-              <article className="result-panel result-panel--highlighted">
-                <div className="result-panel__stack">
-                  <p className="eyebrow">Reading Report</p>
-                  <RevealText as="h3" text="解牌报告" />
-                  <p className="result-panel__summary">{reading.deepNarrative}</p>
-                </div>
-
-                <div className="result-panel__divider" aria-hidden="true" />
-
-                <div className="result-panel__stack">
-                  <h4>行动建议</h4>
+            <article id="core-conclusion" tabIndex={-1} className="result-panel result-panel--highlighted">
+              <h3>核心结论</h3>
+              <p className="result-panel__summary">{reading.reportSections.coreConclusion}</p>
+            </article>
+            <details key={`${reading.cards.map(entry => entry.card.id).join('-')}-${allRevealed}`} open={!allRevealed} className="result-panel result-panel--wide reading-details">
+              <summary>更多解读 · 状态、风险与完整解读</summary>
+              {reading.interpretation.depthSignals.length > 0 ? (
+                <div data-testid="deep-signals-panel">
+                  <h3>深度信号</h3>
                   <ul className="advice-list">
-                    {reading.advice.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
+                    {reading.interpretation.depthSignals.map(item => <li key={item}>{item}</li>)}
                   </ul>
                 </div>
-              </article>
-            )}
+              ) : null}
+              {getReportSections(reading).slice(1).map(section => (
+                <section key={section.id}>
+                  <h3>{section.title}</h3>
+                  <p>{section.body}</p>
+                </section>
+              ))}
+              <section>
+                <h3>完整解读</h3>
+                <p>{reading.deepNarrative}</p>
+              </section>
+            </details>
 
             <article className="result-panel result-panel--wide">
               <p className="eyebrow">Action Plan</p>
@@ -332,7 +267,7 @@ export function ReadingResultSection({
               </details>
             </article>
 
-            <article className="result-panel result-panel--footer result-panel--wide">
+            <article id="save-reading" tabIndex={-1} className="result-panel result-panel--footer result-panel--wide">
               <p className="eyebrow">Archive</p>
               <RevealText as="h3" text="封存本次指引" />
               <div className="save-history-layout">

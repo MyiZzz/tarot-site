@@ -1,7 +1,6 @@
-import { TAROT_DECK } from './cards'
-import { CARD_IMAGE_DIMENSIONS_BY_ID } from './cardImageDimensions'
+import { CARD_IMAGE_DIMENSIONS_BY_ID, CARD_IMAGE_VERSION_BY_ID } from './cardImageDimensions'
 
-const CARD_ASSET_BASE_URL = import.meta.env.BASE_URL
+const CARD_ASSET_BASE_URL = `${import.meta.env.BASE_URL}cards/rws/`
 
 export const CARD_IMAGE_CREDIT =
   'Rider-Waite-Smith tarot deck (1909), public domain via Wikimedia Commons.'
@@ -9,26 +8,23 @@ export const CARD_IMAGE_CREDIT =
 export interface CardImageAsset {
   width: number
   height: number
-  detailJpgUrl: string
-  detailWebpUrl: string
-  thumbnailJpgUrl: string
-  thumbnailWebpUrl: string
+  fallbackUrl: string
+  detailAvifSrcSet: string
+  avifSrcSet: string
+  webpSrcSet: string
 }
 
+// Content versions keep CacheFirst entries valid across artwork deployments.
 export const CARD_IMAGE_ASSET_BY_ID: Record<string, CardImageAsset> = Object.fromEntries(
-  TAROT_DECK.map((card) => [
-    card.id,
+  Object.keys(CARD_IMAGE_DIMENSIONS_BY_ID).map((id) => [
+    id,
     {
-      width: CARD_IMAGE_DIMENSIONS_BY_ID[card.id][0],
-      height: CARD_IMAGE_DIMENSIONS_BY_ID[card.id][1],
-      detailJpgUrl: `${CARD_ASSET_BASE_URL}cards/rws/${card.id}.jpg`,
-      detailWebpUrl: `${CARD_ASSET_BASE_URL}cards/rws/detail-webp/${card.id}.webp`,
-      thumbnailJpgUrl: `${CARD_ASSET_BASE_URL}cards/rws/thumb-jpg/${card.id}.jpg`,
-      thumbnailWebpUrl: `${CARD_ASSET_BASE_URL}cards/rws/thumb-webp/${card.id}.webp`,
+      width: CARD_IMAGE_DIMENSIONS_BY_ID[id][0],
+      height: CARD_IMAGE_DIMENSIONS_BY_ID[id][1],
+      fallbackUrl: `${CARD_ASSET_BASE_URL}${id}.jpg?v=${CARD_IMAGE_VERSION_BY_ID[id]}`,
+      detailAvifSrcSet: [240, 480, 768].map((width) => `${CARD_ASSET_BASE_URL}${id}-${width}.avif?v=${CARD_IMAGE_VERSION_BY_ID[id]} ${width}w`).join(', '),
+      avifSrcSet: [240, 480].map((width) => `${CARD_ASSET_BASE_URL}${id}-${width}.avif?v=${CARD_IMAGE_VERSION_BY_ID[id]} ${width}w`).join(', '),
+      webpSrcSet: [240, 480].map((width) => `${CARD_ASSET_BASE_URL}${id}-${width}.webp?v=${CARD_IMAGE_VERSION_BY_ID[id]} ${width}w`).join(', '),
     } satisfies CardImageAsset,
   ]),
-)
-
-export const CARD_IMAGE_BY_ID: Record<string, string> = Object.fromEntries(
-  TAROT_DECK.map((card) => [card.id, CARD_IMAGE_ASSET_BY_ID[card.id].detailJpgUrl]),
 )

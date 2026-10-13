@@ -8,7 +8,6 @@ import type {
   ReadingResult,
   TopicId,
 } from '../domain/tarot'
-import { createReading } from '../engine/reading'
 import {
   buildReadingRecordFromReading,
   buildReadingRecordId,
@@ -96,6 +95,8 @@ export const useReadingSession = ({
   const [shareMessage, setShareMessage] = useState<string | null>(null)
   const [currentRecordId, setCurrentRecordId] = useState<string | null>(null)
   const [needsReDrawConfirm, setNeedsReDrawConfirm] = useState(false)
+  const mountedRef = useRef(true)
+  const drawingRef = useRef(false)
   const timerRef = useRef<number | null>(null)
   const lastDrawRef = useRef<{ signature: string; timestamp: number } | null>(null)
 
@@ -118,11 +119,18 @@ export const useReadingSession = ({
     !isShuffling
   const effectiveShuffleDelayMs =
     shuffleDelayMs ?? SHUFFLE_DELAY_BY_SPEED[preferences.shuffleSpeed]
+  const readingReady = reading !== null &&
+    reading.input.question === question.trim() &&
+    reading.input.topic === topic &&
+    reading.input.spreadId === spreadId &&
+    reading.input.variantId === variantId
   const allRevealed =
     reading !== null && revealedPositions.length === reading.cards.length
 
   useEffect(() => {
+    mountedRef.current = true
     return () => {
+      mountedRef.current = false
       if (timerRef.current !== null) {
         window.clearTimeout(timerRef.current)
       }
@@ -201,8 +209,8 @@ export const useReadingSession = ({
     setVariantId(nextVariantId)
   }
 
-  const handleDraw = () => {
-    if (!canDraw || topic === null || spreadId === null) {
+  const handleDraw = async () => {
+    if (drawingRef.current || !canDraw || topic === null || spreadId === null) {
       return
     }
 
@@ -229,34 +237,46 @@ export const useReadingSession = ({
       window.clearTimeout(timerRef.current)
     }
 
-    const nextReading = createReading(
-      {
-        question: question.trim(),
-        topic,
-        spreadId,
-        variantId,
-      },
-      {
-        seed: `${now}-${question.trim()}-${topic}-${spreadId}-${variantId ?? 'base'}`,
-        orientationMode: preferences.orientationMode,
-      },
-    )
-
-    setReading(null)
-    setRevealedPositions([])
-    setRecordNotice(null)
-    setShareMessage(null)
-
-    if (effectiveShuffleDelayMs <= 0) {
-      applyReading(nextReading)
-      return
-    }
-
+    drawingRef.current = true
     setIsShuffling(true)
-    timerRef.current = window.setTimeout(
-      () => applyReading(nextReading),
-      effectiveShuffleDelayMs,
-    )
+    try {
+      const { createReading } = await import('../engine/reading')
+      if (!mountedRef.current) return
+      const nextReading = createReading(
+        {
+          question: question.trim(),
+          topic,
+          spreadId,
+          variantId,
+        },
+        {
+          seed: `${now}-${question.trim()}-${topic}-${spreadId}-${variantId ?? 'base'}`,
+          orientationMode: preferences.orientationMode,
+        },
+      )
+
+      setReading(null)
+      setRevealedPositions([])
+      setRecordNotice(null)
+      setShareMessage(null)
+
+      if (effectiveShuffleDelayMs <= 0) {
+        applyReading(nextReading)
+        return
+      }
+
+      timerRef.current = window.setTimeout(
+        () => applyReading(nextReading),
+        Math.max(0, effectiveShuffleDelayMs - (Date.now() - now)),
+      )
+    } catch {
+      if (!mountedRef.current) return
+      setIsShuffling(false)
+      lastDrawRef.current = null
+      setDrawNotice('解读加载失败，请重试。')
+    } finally {
+      drawingRef.current = false
+    }
   }
 
   const handleReveal = (positionKey: string) => {
@@ -388,6 +408,7 @@ export const useReadingSession = ({
     needsReDrawConfirm,
     question,
     reading,
+    readingReady,
     recordNotice,
     recordTagsInput,
     recordTitle,

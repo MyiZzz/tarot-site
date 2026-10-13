@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
-import { createDailyReading, formatDailyLabel } from '../lib/daily'
-import { buildLocalDateKey } from '../lib/localDate'
+import { useEffect, useMemo, useState } from 'react'
+import type { ReadingResult } from '../domain/tarot'
+import { buildLocalDateKey, formatDailyLabel } from '../lib/localDate'
 import { useCurrentLocalDate } from './useCurrentLocalDate'
 
 interface DailyClientState {
@@ -19,8 +19,28 @@ export const useDailyReadingState = () => {
   const dailyDateKey = buildLocalDateKey(currentDate)
   const currentState = stateByDate[dailyDateKey] ?? createDefaultDailyState()
 
-  const dailyReading = useMemo(() => createDailyReading(currentDate), [currentDate])
+  const [loaded, setLoaded] = useState<{ dateKey: string; reading: ReadingResult } | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [loadAttempt, setLoadAttempt] = useState(0)
+  const dailyReading = loaded?.dateKey === dailyDateKey ? loaded.reading : null
   const dailyLabel = useMemo(() => formatDailyLabel(currentDate), [currentDate])
+
+  useEffect(() => {
+    let active = true
+    import('../lib/daily')
+      .then(({ createDailyReading }) => {
+        if (active) {
+          setLoaded({ dateKey: dailyDateKey, reading: createDailyReading(currentDate) })
+          setLoadError(null)
+        }
+      })
+      .catch(() => {
+        if (active) setLoadError('今日指引加载失败，请重试。')
+      })
+    return () => {
+      active = false
+    }
+  }, [currentDate, dailyDateKey, loadAttempt])
 
   const updateCurrentState = (
     updater: (current: DailyClientState) => DailyClientState,
@@ -32,6 +52,11 @@ export const useDailyReadingState = () => {
   }
 
   return {
+    loadError,
+    retryLoad: () => {
+      setLoadError(null)
+      setLoadAttempt((attempt) => attempt + 1)
+    },
     dailyDate: currentDate,
     dailyDateKey,
     dailyLabel,

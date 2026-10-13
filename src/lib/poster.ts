@@ -89,43 +89,40 @@ export const downloadPosterPng = async (
   fileName: string,
 ) => {
   const svg = buildReadingPosterSvg(payload)
-  const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
-  const url = URL.createObjectURL(svgBlob)
+  // A blob-backed SVG with foreignObject taints Chromium's canvas.
+  // This self-contained data URL keeps the rendered poster exportable.
+  const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 
-  try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const nextImage = new Image()
-      nextImage.onload = () => resolve(nextImage)
-      nextImage.onerror = () => reject(new Error('海报图像生成失败。'))
-      nextImage.src = url
-    })
-    const canvas = document.createElement('canvas')
-    canvas.width = 760
-    canvas.height = getPosterHeight(payload.cards.length)
-    const context = canvas.getContext('2d')
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const nextImage = new Image()
+    nextImage.onload = () => resolve(nextImage)
+    nextImage.onerror = () => reject(new Error('海报图像生成失败。'))
+    nextImage.src = url
+  })
+  const canvas = document.createElement('canvas')
+  canvas.width = 760
+  canvas.height = getPosterHeight(payload.cards.length)
+  const context = canvas.getContext('2d')
 
-    if (!context) {
-      throw new Error('当前环境不支持海报导出。')
-    }
-
-    context.drawImage(image, 0, 0)
-
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, 'image/png'),
-    )
-
-    if (!blob) {
-      throw new Error('PNG 海报生成失败。')
-    }
-
-    const blobUrl = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = blobUrl
-    anchor.download = fileName
-    anchor.click()
-    URL.revokeObjectURL(blobUrl)
-    return 'PNG 海报已开始下载。'
-  } finally {
-    URL.revokeObjectURL(url)
+  if (!context) {
+    throw new Error('当前环境不支持海报导出。')
   }
+
+  context.drawImage(image, 0, 0)
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/png'),
+  )
+
+  if (!blob) {
+    throw new Error('PNG 海报生成失败。')
+  }
+
+  const blobUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = blobUrl
+  anchor.download = fileName
+  anchor.click()
+  URL.revokeObjectURL(blobUrl)
+  return 'PNG 海报已开始下载。'
 }

@@ -1,0 +1,28 @@
+import { expect, test } from '@playwright/test'
+
+test('installable app shell reloads offline and caches only viewed artwork', async ({ page, context }) => {
+  await page.goto('/')
+  const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href')
+  const response = await page.request.get(manifestHref!)
+  const manifest = await response.json()
+  expect(manifest.display).toBe('standalone')
+  expect(manifest.icons.map((icon: { sizes: string }) => icon.sizes)).toEqual(['192x192', '512x512'])
+  await page.evaluate(async () => { await navigator.serviceWorker.ready })
+  await page.reload()
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
+  const artwork = page.locator('.daily-card-slot img')
+  await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
+  await expect.poll(() => page.evaluate(async () => (await (await caches.open('tarot-artwork')).keys()).length)).toBeGreaterThan(0)
+  const precachedUrls = await page.evaluate(async () => {
+    const names = (await caches.keys()).filter((name) => name.includes('precache'))
+    return (await Promise.all(names.map(async (name) => (await (await caches.open(name)).keys()).map((request) => request.url)))).flat()
+  })
+  expect(precachedUrls.some((url) => url.includes('/cards/rws/'))).toBe(false)
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page.getByRole('button', { name: '揭晓今日能量', exact: true })).toBeVisible()
+  await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
+  expect(await artwork.getAttribute('src')).not.toMatch(/^data:/)
+  await page.getByRole('button', { name: '揭晓今日能量', exact: true }).click()
+  await expect(page.locator('.daily-card-slot .is-revealed')).toBeVisible()
+})

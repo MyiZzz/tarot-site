@@ -10,6 +10,7 @@ import {
 import './App.css'
 import { scrollToSection } from './lib/scroll'
 import { GuidePanel } from './components/GuidePanel'
+import { SectionErrorBoundary } from './components/SectionErrorBoundary'
 import { LazySection } from './components/LazySection'
 import { RevealText } from './components/RevealText'
 import {
@@ -50,12 +51,12 @@ interface AppProps {
 type RecordFilter = 'all' | 'saved' | 'auto' | 'daily'
 type NavSection = 'daily' | 'reading' | 'result' | 'records' | 'encyclopedia'
 
-const NAV_ITEMS: Array<{ id: NavSection; label: string; subtitle: string }> = [
-  { id: 'daily', label: '每日一张', subtitle: 'Daily Guidance' },
-  { id: 'reading', label: '开始占卜', subtitle: 'Ritual Studio' },
-  { id: 'result', label: '结果解读', subtitle: 'Reading Report' },
-  { id: 'records', label: '记录中心', subtitle: 'Record Center' },
-  { id: 'encyclopedia', label: '牌卡百科', subtitle: 'Card Encyclopedia' },
+const NAV_ITEMS: Array<{ id: NavSection; label: string }> = [
+  { id: 'daily', label: '每日一张' },
+  { id: 'reading', label: '开始占卜' },
+  { id: 'result', label: '结果解读' },
+  { id: 'records', label: '记录中心' },
+  { id: 'encyclopedia', label: '牌卡百科' },
 ]
 
 const LazySectionFallback = ({
@@ -65,7 +66,7 @@ const LazySectionFallback = ({
   id: string
   title: string
 }) => (
-  <section className="panel section" id={id}>
+  <section className="panel section" id={id} data-section-loading>
     <div className="section__heading">
       <div>
         <p className="eyebrow">Loading</p>
@@ -85,11 +86,11 @@ function App({ shuffleDelayMs }: AppProps) {
   const [compareSelection, setCompareSelection] = useState<string[]>([])
   const [guideDismissed, setGuideDismissed] = useState(() => loadGuideDismissed())
   const [recordsMessage, setRecordsMessage] = useState<string | null>(null)
+  const pendingNavigationRef = useRef<MutationObserver | null>(null)
   const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     records,
-    storageBackend,
     storageReady,
     exportRecordsJson,
     importRecordsFromText,
@@ -97,6 +98,8 @@ function App({ shuffleDelayMs }: AppProps) {
   } = usePersistentRecords()
 
   const {
+    loadError: dailyLoadError,
+    retryLoad: retryDailyLoad,
     dailyDate,
     dailyLabel,
     dailyMessage,
@@ -122,10 +125,10 @@ function App({ shuffleDelayMs }: AppProps) {
       Array.from(
         new Set([
           ...(readingSession.reading?.cards.map((entry) => entry.card.id) ?? []),
-          ...(dailyRevealed ? [dailyReading.cards[0].card.id] : []),
+          ...(dailyRevealed && dailyReading ? [dailyReading.cards[0].card.id] : []),
         ]),
       ),
-    [dailyReading.cards, dailyRevealed, readingSession.reading],
+    [dailyReading, dailyRevealed, readingSession.reading],
   )
 
   useEffect(() => {
@@ -137,32 +140,32 @@ function App({ shuffleDelayMs }: AppProps) {
       return
     }
 
+    const intersections = new Map<Element, boolean>()
+    const anchors = NAV_ITEMS.map((item) => ({
+      id: item.id,
+      element: document.getElementById(item.id === 'daily' ? 'daily-anchor' : item.id),
+    }))
+    const updateActive = () => {
+      const visible = anchors.filter(({ element }) => element && intersections.get(element))
+      const active = [...visible].reverse().find(({ element }) => element!.getBoundingClientRect().top <= window.innerHeight * 0.3) ?? visible[0]
+      if (active) setNavSection(active.id)
+    }
     const observer = new IntersectionObserver(
       (entries) => {
-        const active = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0]
-
-        if (active?.target.id) {
-          setNavSection(active.target.id as NavSection)
-        }
+        entries.forEach((entry) => intersections.set(entry.target, entry.isIntersecting))
+        updateActive()
       },
-      { rootMargin: '-20% 0px -55% 0px', threshold: [0.2, 0.45, 0.75] },
+      // A zero threshold also detects tall sections that fill the observation band.
+      { rootMargin: '-15% 0px -55% 0px', threshold: 0 },
     )
-
-    NAV_ITEMS.forEach((entry) => {
-      const element = document.getElementById(entry.id)
-
-      if (element) {
-        observer.observe(element)
-      }
+    anchors.forEach(({ element }) => {
+      if (element) observer.observe(element)
     })
-
     return () => observer.disconnect()
-  }, [storageReady])
+  }, [])
 
   const handleRevealDaily = () => {
-    if (dailyRevealed) {
+    if (dailyRevealed || !dailyReading) {
       return
     }
 
@@ -172,6 +175,7 @@ function App({ shuffleDelayMs }: AppProps) {
   }
 
   const handleShareDaily = async () => {
+    if (!dailyReading) return
     try {
       const message = await shareText(
         '浮世塔罗 · 每日一张',
@@ -184,6 +188,7 @@ function App({ shuffleDelayMs }: AppProps) {
   }
 
   const handleDownloadDailyPoster = async () => {
+    if (!dailyReading) return
     try {
       const message = await (await import('./lib/poster')).downloadPosterPng(
         {
@@ -257,28 +262,54 @@ function App({ shuffleDelayMs }: AppProps) {
     records.some((record) => record.id === id),
   )
 
+  useEffect(() => {
+    const cancelPending = () => pendingNavigationRef.current?.disconnect()
+    window.addEventListener('wheel', cancelPending, { passive: true })
+    window.addEventListener('touchstart', cancelPending, { passive: true })
+    window.addEventListener('keydown', cancelPending)
+    return () => {
+      cancelPending()
+      window.removeEventListener('wheel', cancelPending)
+      window.removeEventListener('touchstart', cancelPending)
+      window.removeEventListener('keydown', cancelPending)
+    }
+  }, [])
+
+  const navigateToSection = (id: NavSection) => {
+    pendingNavigationRef.current?.disconnect()
+    setNavSection(id)
+    const anchor = document.getElementById(id)
+    if (!anchor) return
+    const align = () => anchor.scrollIntoView({ behavior: 'instant', block: 'start' })
+    if (anchor.querySelector('[data-section-loading]')) {
+      // A short placeholder can be clamped by the page bottom before it expands.
+      const observer = new MutationObserver(() => {
+        if (!anchor.querySelector('[data-section-loading]')) {
+          observer.disconnect()
+          align()
+        }
+      })
+      observer.observe(anchor, { childList: true, subtree: true })
+      pendingNavigationRef.current = observer
+    }
+    align()
+  }
+
   const renderNavButton = (
     item: (typeof NAV_ITEMS)[number],
-    compact = false,
-    mode: 'top' | 'side' | 'mobile' = 'side',
+    mode: 'top' | 'mobile',
   ) => (
     <button
       key={item.id}
       aria-current={navSection === item.id ? 'page' : undefined}
       aria-label={
-        mode === 'mobile' ? item.label : `${mode === 'top' ? '顶部' : '侧边'}导航：${item.label}`
+        mode === 'mobile' ? item.label : `顶部导航：${item.label}`
       }
-      className={`stitch-nav-button ${navSection === item.id ? 'is-active' : ''} ${
-        compact ? 'is-compact' : ''
-      }`}
+      className={`stitch-nav-button ${navSection === item.id ? 'is-active' : ''}`}
       type="button"
-      onClick={() => {
-        setNavSection(item.id)
-        scrollToSection(item.id)
-      }}
+      onClick={() => navigateToSection(item.id)}
     >
       <span className="stitch-nav-button__label">{item.label}</span>
-      {!compact ? <small>{item.subtitle}</small> : null}
     </button>
   )
 
@@ -292,6 +323,7 @@ function App({ shuffleDelayMs }: AppProps) {
         onChange={handleImportRecords}
       />
 
+      <a className="skip-link" href="#main-content">跳至主要内容</a>
       <header className="stitch-topbar">
         <div className="stitch-topbar__inner">
           <div className="stitch-brand">
@@ -299,36 +331,31 @@ function App({ shuffleDelayMs }: AppProps) {
             <span className="stitch-brand__sub">UKIYO TAROT</span>
           </div>
           <nav className="stitch-topbar__nav" aria-label="主导航">
-            {NAV_ITEMS.map((item) => renderNavButton(item, true, 'top'))}
+            {NAV_ITEMS.map((item) => renderNavButton(item, 'top'))}
           </nav>
         </div>
       </header>
 
-      <aside className="stitch-sidenav" aria-label="侧边导航">
-        <div className="stitch-sidenav__heading">
-          <p className="eyebrow">The Obsidian Sanctuary</p>
-          <h2>你的专属占卜仪式空间</h2>
-        </div>
-        <nav className="stitch-sidenav__nav" aria-label="分区导航">
-          {NAV_ITEMS.map((item) => renderNavButton(item, false, 'side'))}
-        </nav>
-      </aside>
-
-      <main className="stitch-main">
+      <main className="stitch-main" id="main-content">
         <div className="layout stitch-layout">
           <section className="panel stitch-hero" aria-label="首页引导">
             <div className="stitch-hero__text">
               <p className="eyebrow">Tarot Salon</p>
               <RevealText as="h1" className="hero__title" text="把抽到的 78 张牌，真正铺上桌面。" />
               <p className="hero__lede">
-                浮世塔罗把每日一张、深度牌阵、记录归档、追问与分享海报接成一条完整的解读动线。
+                静下心，带着一个问题出发。在牌面的隐喻里，看清此刻，找到下一步。
               </p>
               <div className="hero__meta">
                 <span>78 张独立牌面</span>
                 <span>11 套牌阵</span>
-                <span>{storageBackend === 'indexeddb' ? 'IndexedDB 记录中心' : '本地记录中心'}</span>
+                <span>本地私密记录</span>
                 <span>PNG 海报导出</span>
               </div>
+            </div>
+            <div className="hero-orbit" aria-hidden="true">
+              <span className="hero-orbit__star">✦</span>
+              <span className="hero-orbit__moon">☾</span>
+              <span className="hero-orbit__caption">AS ABOVE · SO BELOW</span>
             </div>
             <div className="stitch-hero__cta">
               <button
@@ -344,15 +371,23 @@ function App({ shuffleDelayMs }: AppProps) {
             </div>
           </section>
 
-          <DailyPanel
-            dailyLabel={dailyLabel}
-            dailyMessage={dailyMessage}
-            dailyRevealed={dailyRevealed}
-            entry={dailyReading.cards[0]}
-            onDownloadPoster={handleDownloadDailyPoster}
-            onReveal={handleRevealDaily}
-            onShare={handleShareDaily}
-          />
+          <div id="daily-anchor">
+            {dailyReading ? <DailyPanel
+              dailyLabel={dailyLabel}
+              dailyMessage={dailyMessage}
+              dailyRevealed={dailyRevealed}
+              entry={dailyReading.cards[0]}
+              onDownloadPoster={handleDownloadDailyPoster}
+              onReveal={handleRevealDaily}
+              onShare={handleShareDaily}
+            /> : dailyLoadError ? (
+              <section className="panel section" id="daily">
+                <h2>今日指引</h2>
+                <p role="alert">{dailyLoadError}</p>
+                <button type="button" onClick={retryDailyLoad}>重试</button>
+              </section>
+            ) : <LazySectionFallback id="daily" title="今日指引" />}
+          </div>
 
           <GuidePanel
             dismissed={guideDismissed}
@@ -361,6 +396,7 @@ function App({ shuffleDelayMs }: AppProps) {
           />
 
           <ReadingStudioSection
+            readingReady={readingSession.readingReady}
             canDraw={readingSession.canDraw}
             drawNotice={readingSession.drawNotice}
             isShuffling={readingSession.isShuffling}
@@ -402,47 +438,52 @@ function App({ shuffleDelayMs }: AppProps) {
             shareMessage={readingSession.shareMessage}
           />
 
-          <LazySection fallback={<LazySectionFallback id="records" title="记录中心" />}>
-            <Suspense fallback={<LazySectionFallback id="records" title="记录中心" />}>
-              <RecordCenter
-                compareSelection={normalizedCompareSelection}
-                dateFilter={recordDateFilter}
-                filter={recordFilter}
-                onClearCompare={() => setCompareSelection([])}
-                onDateFilterChange={setRecordDateFilter}
-                onExportRecords={handleExportRecords}
-                onImportRecords={() => importInputRef.current?.click()}
-                onFilterChange={setRecordFilter}
-                onQueryChange={setRecordQuery}
-                onTagFilterChange={setRecordTagFilter}
-                onToggleCompare={handleToggleCompare}
-                query={recordQuery}
-                records={records}
-                recordsMessage={recordsMessage}
-                sectionId="records"
-                storageBackend={storageBackend}
-                storageReady={storageReady}
-                tagFilter={recordTagFilter}
-              />
-            </Suspense>
-          </LazySection>
+          <section id="records">
+            <LazySection fallback={<LazySectionFallback id="records-loading" title="记录中心" />}>
+              <SectionErrorBoundary title="记录中心">
+                <Suspense fallback={<LazySectionFallback id="records-loading" title="记录中心" />}>
+                  <RecordCenter
+                    compareSelection={normalizedCompareSelection}
+                    dateFilter={recordDateFilter}
+                    filter={recordFilter}
+                    onClearCompare={() => setCompareSelection([])}
+                    onDateFilterChange={setRecordDateFilter}
+                    onExportRecords={handleExportRecords}
+                    onImportRecords={() => importInputRef.current?.click()}
+                    onFilterChange={setRecordFilter}
+                    onQueryChange={setRecordQuery}
+                    onTagFilterChange={setRecordTagFilter}
+                    onToggleCompare={handleToggleCompare}
+                    query={recordQuery}
+                    records={records}
+                    recordsMessage={recordsMessage}
+                    sectionId="records-content"
+                    storageReady={storageReady}
+                    tagFilter={recordTagFilter}
+                  />
+                </Suspense>
+              </SectionErrorBoundary>
+            </LazySection>
+          </section>
 
           <section id="encyclopedia">
             <LazySection
               fallback={<LazySectionFallback id="encyclopedia-fallback" title="牌卡百科" />}
             >
-              <Suspense
-                fallback={<LazySectionFallback id="encyclopedia-fallback" title="牌卡百科" />}
-              >
-                <CardEncyclopedia featuredCardIds={featuredCardIds} />
-              </Suspense>
+              <SectionErrorBoundary title="牌卡百科">
+                <Suspense
+                  fallback={<LazySectionFallback id="encyclopedia-fallback" title="牌卡百科" />}
+                >
+                  <CardEncyclopedia featuredCardIds={featuredCardIds} />
+                </Suspense>
+              </SectionErrorBoundary>
             </LazySection>
           </section>
         </div>
       </main>
 
       <nav className="stitch-mobile-nav" aria-label="移动端导航">
-        {NAV_ITEMS.map((item) => renderNavButton(item, true, 'mobile'))}
+        {NAV_ITEMS.map((item) => renderNavButton(item, 'mobile'))}
       </nav>
 
       <div className="stitch-mobile-spacer" />

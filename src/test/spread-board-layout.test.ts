@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { SPREADS } from '../data/spreads'
 import {
   buildSpreadStageLayout,
+  getBoardMetaForSpread,
   type BoardMeta,
   type LayoutCoordinate,
 } from '../lib/spreadBoardLayout'
@@ -92,6 +94,11 @@ describe('spread board stage layout', () => {
     const layout = buildSpreadStageLayout(board, board.coordinates.map((entry) => entry.key))
 
     expect(layout.captions).toHaveLength(10)
+    for (let i = 0; i < layout.cards.length; i++) {
+      for (let j = i + 1; j < layout.cards.length; j++) {
+        expect(intersects(layout.cards[i]!.rect, layout.cards[j]!.rect), `${i} overlaps ${j}`).toBe(i === 0 && j === 1)
+      }
+    }
 
     for (const caption of layout.captions) {
       const card = layout.cards.find((entry) => entry.key === caption.key)!
@@ -113,6 +120,27 @@ describe('spread board stage layout', () => {
         ).toBe(false)
       }
     }
+  })
+
+  it('allows only the intentional central crossing in the Celtic Cross', () => {
+    const spread = SPREADS.find(entry => entry.layoutId === 'celtic-cross')!
+    const board = getBoardMetaForSpread(spread)
+    const layout = buildSpreadStageLayout(board, board.coordinates.map(entry => entry.key))
+    const crossingKeys = spread.positions.slice(0, 2).map(entry => entry.key)
+    const overlaps: string[] = []
+
+    for (let index = 0; index < layout.cards.length; index += 1) {
+      for (const right of layout.cards.slice(index + 1)) {
+        const left = layout.cards[index]!
+        if (intersects(left.rect, right.rect)) {
+          overlaps.push([left.key, right.key].join(' / '))
+        }
+      }
+    }
+
+    // Returned bounds include rotation (the challenge card is turned 90 degrees).
+    // Requiring exactly this pair also guards against removing the central crossing.
+    expect(overlaps).toEqual([crossingKeys.join(' / ')])
   })
 
   it('does not generate captions for unrevealed positions', () => {
