@@ -1,3 +1,4 @@
+import { CardArtwork } from './CardArtwork'
 import type { CardArtManifest, Orientation, TarotCard } from '../domain/tarot'
 import { CARD_IMAGE_ASSET_BY_ID } from '../data/cardImages'
 
@@ -77,9 +78,10 @@ export function TarotCardFigure({
   const imageAsset = CARD_IMAGE_ASSET_BY_ID[card.id]
   const shouldShowArtwork =
     imageProfile !== 'minimal' && Boolean(art.imageUrl && imageAsset)
+  // Daily eager artwork: 240px outer card - 36px padding - 2px frame border.
   const imageSizes = `${loading === 'lazy' ? 'auto, ' : ''}${imageProfile === 'thumb'
     ? '(max-width: 768px) 120px, 160px'
-    : '(max-width: 768px) 200px, 320px'}`
+    : loading === 'eager' ? '202px' : '(max-width: 768px) 200px, 320px'}`
 
   if (compact) {
     return (
@@ -119,22 +121,18 @@ export function TarotCardFigure({
           <div className={`tarot-card-figure__frame tarot-card-figure__frame--${art.frame}`}>
             {shouldShowArtwork ? (
               <div className="tarot-card-figure__image-wrap">
-                <picture>
-                  <source sizes={imageSizes} srcSet={imageAsset.avifSrcSet} type="image/avif" />
-                  <source sizes={imageSizes} srcSet={imageAsset.webpSrcSet} type="image/webp" />
-                  <img
-                    className={`tarot-card-figure__image ${
-                      orientation === 'down' ? 'is-reversed' : ''
-                    }`}
-                    src={imageAsset.fallbackUrl}
-                    sizes={imageSizes}
-                    alt={`${card.nameZh}（${card.nameEn}）牌面`}
-                    width={imageAsset?.width}
-                    height={imageAsset?.height}
-                    decoding="async"
-                    loading={loading}
-                  />
-                </picture>
+                <CardArtwork
+                  asset={imageAsset}
+                  className={`tarot-card-figure__image ${
+                    orientation === 'down' ? 'is-reversed' : ''
+                  }`}
+                  sizes={imageSizes}
+                  alt={`${card.nameZh}（${card.nameEn}）牌面`}
+                  width={imageAsset?.width}
+                  height={imageAsset?.height}
+                  decoding="async"
+                  loading={loading}
+                />
               </div>
             ) : (
               <>

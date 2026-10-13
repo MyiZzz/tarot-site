@@ -1,3 +1,4 @@
+import { CardArtwork } from './CardArtwork'
 import type { ReadingRecord } from '../domain/tarot'
 import { CARD_IMAGE_ASSET_BY_ID } from '../data/cardImages'
 import { RevealText } from './RevealText'
@@ -100,18 +101,16 @@ const RecordCardThumbs = ({ record }: { record: ReadingRecord }) => (
       const imageAsset = CARD_IMAGE_ASSET_BY_ID[card.cardId]
 
       return imageAsset ? (
-        <picture key={`${record.id}-${card.cardId}-${card.positionLabel}`}>
-          <source sizes="96px" srcSet={imageAsset.avifSrcSet} type="image/avif" />
-          <source sizes="96px" srcSet={imageAsset.webpSrcSet} type="image/webp" />
-          <img
-            src={imageAsset.fallbackUrl}
-            alt={`${card.cardName}牌面`}
-            height={160}
-            loading="lazy"
-            width={96}
-            decoding="async"
-          />
-        </picture>
+        <CardArtwork
+          key={`${record.id}-${card.cardId}-${card.positionLabel}`}
+          asset={imageAsset}
+          sizes="96px"
+          alt={`${card.cardName}牌面`}
+          height={160}
+          loading="lazy"
+          width={96}
+          decoding="async"
+        />
       ) : null
     })}
   </div>
