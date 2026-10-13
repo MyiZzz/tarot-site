@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { TOPIC_BY_ID } from '../data/topics'
 import type { ReadingResult } from '../domain/tarot'
+import { SectionErrorBoundary } from '../components/SectionErrorBoundary'
 import { StatusMessage } from '../components/StatusMessage'
 import { RevealText } from '../components/RevealText'
 
@@ -184,15 +185,17 @@ export function ReadingResultSection({
           </div>
           <StatusMessage className="selection-note result-actions__notice" message={shareMessage} />
 
-          <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
-            <SpreadLayoutBoard
-              cards={reading.cards}
-              onReveal={onReveal}
-              positionReadings={reading.positionReadings}
-              revealedPositions={revealedPositions}
-              spread={reading.spread}
-            />
-          </Suspense>
+          <SectionErrorBoundary title="牌阵桌面">
+            <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
+              <SpreadLayoutBoard
+                cards={reading.cards}
+                onReveal={onReveal}
+                positionReadings={reading.positionReadings}
+                revealedPositions={revealedPositions}
+                spread={reading.spread}
+              />
+            </Suspense>
+          </SectionErrorBoundary>
 
           <div className="result-grid">
             {reportSections.length > 0 ? (

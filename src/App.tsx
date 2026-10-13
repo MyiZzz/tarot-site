@@ -10,6 +10,7 @@ import {
 import './App.css'
 import { scrollToSection } from './lib/scroll'
 import { GuidePanel } from './components/GuidePanel'
+import { SectionErrorBoundary } from './components/SectionErrorBoundary'
 import { LazySection } from './components/LazySection'
 import { RevealText } from './components/RevealText'
 import {
@@ -50,12 +51,12 @@ interface AppProps {
 type RecordFilter = 'all' | 'saved' | 'auto' | 'daily'
 type NavSection = 'daily' | 'reading' | 'result' | 'records' | 'encyclopedia'
 
-const NAV_ITEMS: Array<{ id: NavSection; label: string; subtitle: string }> = [
-  { id: 'daily', label: '每日一张', subtitle: 'Daily Guidance' },
-  { id: 'reading', label: '开始占卜', subtitle: 'Ritual Studio' },
-  { id: 'result', label: '结果解读', subtitle: 'Reading Report' },
-  { id: 'records', label: '记录中心', subtitle: 'Record Center' },
-  { id: 'encyclopedia', label: '牌卡百科', subtitle: 'Card Encyclopedia' },
+const NAV_ITEMS: Array<{ id: NavSection; label: string }> = [
+  { id: 'daily', label: '每日一张' },
+  { id: 'reading', label: '开始占卜' },
+  { id: 'result', label: '结果解读' },
+  { id: 'records', label: '记录中心' },
+  { id: 'encyclopedia', label: '牌卡百科' },
 ]
 
 const LazySectionFallback = ({
@@ -263,18 +264,15 @@ function App({ shuffleDelayMs }: AppProps) {
 
   const renderNavButton = (
     item: (typeof NAV_ITEMS)[number],
-    compact = false,
-    mode: 'top' | 'side' | 'mobile' = 'side',
+    mode: 'top' | 'mobile',
   ) => (
     <button
       key={item.id}
       aria-current={navSection === item.id ? 'page' : undefined}
       aria-label={
-        mode === 'mobile' ? item.label : `${mode === 'top' ? '顶部' : '侧边'}导航：${item.label}`
+        mode === 'mobile' ? item.label : `顶部导航：${item.label}`
       }
-      className={`stitch-nav-button ${navSection === item.id ? 'is-active' : ''} ${
-        compact ? 'is-compact' : ''
-      }`}
+      className={`stitch-nav-button ${navSection === item.id ? 'is-active' : ''}`}
       type="button"
       onClick={() => {
         setNavSection(item.id)
@@ -284,7 +282,6 @@ function App({ shuffleDelayMs }: AppProps) {
       }}
     >
       <span className="stitch-nav-button__label">{item.label}</span>
-      {!compact ? <small>{item.subtitle}</small> : null}
     </button>
   )
 
@@ -306,20 +303,10 @@ function App({ shuffleDelayMs }: AppProps) {
             <span className="stitch-brand__sub">UKIYO TAROT</span>
           </div>
           <nav className="stitch-topbar__nav" aria-label="主导航">
-            {NAV_ITEMS.map((item) => renderNavButton(item, true, 'top'))}
+            {NAV_ITEMS.map((item) => renderNavButton(item, 'top'))}
           </nav>
         </div>
       </header>
-
-      <aside className="stitch-sidenav" aria-label="侧边导航">
-        <div className="stitch-sidenav__heading">
-          <p className="eyebrow">The Obsidian Sanctuary</p>
-          <h2>你的专属占卜仪式空间</h2>
-        </div>
-        <nav className="stitch-sidenav__nav" aria-label="分区导航">
-          {NAV_ITEMS.map((item) => renderNavButton(item, false, 'side'))}
-        </nav>
-      </aside>
 
       <main className="stitch-main" id="main-content">
         <div className="layout stitch-layout">
@@ -422,46 +409,50 @@ function App({ shuffleDelayMs }: AppProps) {
           />
 
           <LazySection fallback={<LazySectionFallback id="records" title="记录中心" />}>
-            <Suspense fallback={<LazySectionFallback id="records" title="记录中心" />}>
-              <RecordCenter
-                compareSelection={normalizedCompareSelection}
-                dateFilter={recordDateFilter}
-                filter={recordFilter}
-                onClearCompare={() => setCompareSelection([])}
-                onDateFilterChange={setRecordDateFilter}
-                onExportRecords={handleExportRecords}
-                onImportRecords={() => importInputRef.current?.click()}
-                onFilterChange={setRecordFilter}
-                onQueryChange={setRecordQuery}
-                onTagFilterChange={setRecordTagFilter}
-                onToggleCompare={handleToggleCompare}
-                query={recordQuery}
-                records={records}
-                recordsMessage={recordsMessage}
-                sectionId="records"
-                storageBackend={storageBackend}
-                storageReady={storageReady}
-                tagFilter={recordTagFilter}
-              />
-            </Suspense>
+            <SectionErrorBoundary title="记录中心" id="records">
+              <Suspense fallback={<LazySectionFallback id="records" title="记录中心" />}>
+                <RecordCenter
+                  compareSelection={normalizedCompareSelection}
+                  dateFilter={recordDateFilter}
+                  filter={recordFilter}
+                  onClearCompare={() => setCompareSelection([])}
+                  onDateFilterChange={setRecordDateFilter}
+                  onExportRecords={handleExportRecords}
+                  onImportRecords={() => importInputRef.current?.click()}
+                  onFilterChange={setRecordFilter}
+                  onQueryChange={setRecordQuery}
+                  onTagFilterChange={setRecordTagFilter}
+                  onToggleCompare={handleToggleCompare}
+                  query={recordQuery}
+                  records={records}
+                  recordsMessage={recordsMessage}
+                  sectionId="records"
+                  storageBackend={storageBackend}
+                  storageReady={storageReady}
+                  tagFilter={recordTagFilter}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
           </LazySection>
 
           <section id="encyclopedia">
             <LazySection
               fallback={<LazySectionFallback id="encyclopedia-fallback" title="牌卡百科" />}
             >
-              <Suspense
-                fallback={<LazySectionFallback id="encyclopedia-fallback" title="牌卡百科" />}
-              >
-                <CardEncyclopedia featuredCardIds={featuredCardIds} />
-              </Suspense>
+              <SectionErrorBoundary title="牌卡百科">
+                <Suspense
+                  fallback={<LazySectionFallback id="encyclopedia-fallback" title="牌卡百科" />}
+                >
+                  <CardEncyclopedia featuredCardIds={featuredCardIds} />
+                </Suspense>
+              </SectionErrorBoundary>
             </LazySection>
           </section>
         </div>
       </main>
 
       <nav className="stitch-mobile-nav" aria-label="移动端导航">
-        {NAV_ITEMS.map((item) => renderNavButton(item, true, 'mobile'))}
+        {NAV_ITEMS.map((item) => renderNavButton(item, 'mobile'))}
       </nav>
 
       <div className="stitch-mobile-spacer" />

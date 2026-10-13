@@ -6,8 +6,6 @@ export const buildDailySeed = (date: Date = new Date()) => {
   return `daily-${buildLocalDateKey(date)}`
 }
 
-export { formatDailyLabel } from './localDate'
-
 export const createDailyReading = (date: Date = new Date()): ReadingResult =>
   createReading(
     {
