@@ -31,6 +31,18 @@ export default defineConfig({
       },
     },
   ],
+  build: {
+    manifest: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
+            return 'react-vendor'
+          }
+        },
+      },
+    },
+  },
   test: {
     include: ['src/test/**/*.{test,spec}.{ts,tsx}', 'src/test/*.{test,spec}.{ts,tsx}'],
     exclude: ['tests/e2e/**'],

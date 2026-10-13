@@ -1,4 +1,3 @@
-import { TAROT_DECK } from './cards'
 import { CARD_IMAGE_DIMENSIONS_BY_ID } from './cardImageDimensions'
 
 const CARD_ASSET_BASE_URL = import.meta.env.BASE_URL
@@ -16,19 +15,19 @@ export interface CardImageAsset {
 }
 
 export const CARD_IMAGE_ASSET_BY_ID: Record<string, CardImageAsset> = Object.fromEntries(
-  TAROT_DECK.map((card) => [
-    card.id,
+  Object.keys(CARD_IMAGE_DIMENSIONS_BY_ID).map((id) => [
+    id,
     {
-      width: CARD_IMAGE_DIMENSIONS_BY_ID[card.id][0],
-      height: CARD_IMAGE_DIMENSIONS_BY_ID[card.id][1],
-      detailJpgUrl: `${CARD_ASSET_BASE_URL}cards/rws/${card.id}.jpg`,
-      detailWebpUrl: `${CARD_ASSET_BASE_URL}cards/rws/detail-webp/${card.id}.webp`,
-      thumbnailJpgUrl: `${CARD_ASSET_BASE_URL}cards/rws/thumb-jpg/${card.id}.jpg`,
-      thumbnailWebpUrl: `${CARD_ASSET_BASE_URL}cards/rws/thumb-webp/${card.id}.webp`,
+      width: CARD_IMAGE_DIMENSIONS_BY_ID[id][0],
+      height: CARD_IMAGE_DIMENSIONS_BY_ID[id][1],
+      detailJpgUrl: `${CARD_ASSET_BASE_URL}cards/rws/${id}.jpg`,
+      detailWebpUrl: `${CARD_ASSET_BASE_URL}cards/rws/detail-webp/${id}.webp`,
+      thumbnailJpgUrl: `${CARD_ASSET_BASE_URL}cards/rws/thumb-jpg/${id}.jpg`,
+      thumbnailWebpUrl: `${CARD_ASSET_BASE_URL}cards/rws/thumb-webp/${id}.webp`,
     } satisfies CardImageAsset,
   ]),
 )
 
 export const CARD_IMAGE_BY_ID: Record<string, string> = Object.fromEntries(
-  TAROT_DECK.map((card) => [card.id, CARD_IMAGE_ASSET_BY_ID[card.id].detailJpgUrl]),
+  Object.keys(CARD_IMAGE_DIMENSIONS_BY_ID).map((id) => [id, CARD_IMAGE_ASSET_BY_ID[id].detailJpgUrl]),
 )

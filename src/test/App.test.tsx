@@ -1,4 +1,4 @@
-﻿import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
@@ -56,7 +56,7 @@ describe('App tarot flow', () => {
 
       await user.click(screen.getByRole('button', { name: '全部揭晓' }))
 
-      expect(screen.getByText('现状')).toBeInTheDocument()
+      expect(await screen.findByText('现状')).toBeInTheDocument()
       expect(screen.getByText('阻碍')).toBeInTheDocument()
       expect(screen.getByText('建议')).toBeInTheDocument()
       expect(screen.getByRole('heading', { name: '记录中心' })).toBeInTheDocument()
@@ -87,7 +87,7 @@ describe('App tarot flow', () => {
       expect(screen.queryByLabelText('晚间复盘')).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: '保存今日记录' })).not.toBeInTheDocument()
 
-      await user.click(screen.getByRole('button', { name: '揭晓今日能量' }))
+      await user.click(await screen.findByRole('button', { name: '揭晓今日能量' }))
 
       expect(screen.getByTestId('daily-revealed-content')).toBeInTheDocument()
 

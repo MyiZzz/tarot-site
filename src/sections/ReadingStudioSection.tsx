@@ -4,7 +4,7 @@ import { RevealText } from '../components/RevealText'
 import { SPREADS } from '../data/spreads'
 import { TOPICS } from '../data/topics'
 import type { ResolvedSpreadDefinition, SpreadGuide, TopicId } from '../domain/tarot'
-import { getSpreadPreviewPositions } from '../engine/reading'
+import { getSpreadPreviewPositions } from '../lib/spreadPreview'
 
 type StudioTopicSelection = {
   framing: string
