@@ -131,6 +131,10 @@ describe('ReadingResultSection', () => {
     expect(container.querySelectorAll('.ghost-button--icon-only')).toHaveLength(2)
     expect(screen.getByTestId('follow-up-accordion')).not.toHaveAttribute('open')
     expect(screen.getByTestId('deep-signals-panel')).toBeInTheDocument()
+    for (const [name, target] of [['核心结论', 'core-conclusion'], ['逐牌解读', 'card-readings'], ['保存', 'save-reading']]) {
+      expect(screen.getByRole('link', { name })).toHaveAttribute('href', `#${target}`)
+      expect(document.getElementById(target)).toBeInTheDocument()
+    }
   })
 
   it('keeps the archive inputs writable through the existing handlers', async () => {
@@ -206,7 +210,7 @@ describe('ReadingResultSection', () => {
     await act(() => vi.dynamicImportSettled())
     expect(screen.getByRole('region', { name: '牌阵桌面' })).toBeInTheDocument()
 
-    expect(screen.getByText('核心结论')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '核心结论' })).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.coreConclusion)).toBeInTheDocument()
     expect(screen.getByText('当前状态')).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.currentState)).toBeInTheDocument()
@@ -217,6 +221,7 @@ describe('ReadingResultSection', () => {
     expect(screen.getByText('回看问题')).toBeInTheDocument()
     expect(screen.getByText(reading.reportSections.reviewPrompt)).toBeInTheDocument()
     expect(screen.getByText('完整解读')).toBeInTheDocument()
+    expect(document.querySelector('.reading-details')).not.toHaveAttribute('open')
   })
 
   it('only lists revealed cards and uses their generated position readings', async () => {

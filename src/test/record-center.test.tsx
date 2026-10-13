@@ -135,7 +135,9 @@ describe('RecordCenter filters and compare', () => {
       />,
     )
 
-    expect(screen.getAllByText('当时主线').length).toBeGreaterThan(0)
+    expect(screen.queryByText('当时主线')).not.toBeInTheDocument()
+    expect(document.querySelector('.record-details')).not.toHaveAttribute('open')
+    expect(document.querySelector('.record-options--backup')!.compareDocumentPosition(document.querySelector('.record-grid')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getAllByText('这次阅读的主线是先稳住推进节奏。').length).toBeGreaterThan(0)
     expect(screen.getAllByText('风险提醒').length).toBeGreaterThan(0)
     expect(screen.getAllByText('风险提醒是不要把焦虑误当行动。').length).toBeGreaterThan(0)

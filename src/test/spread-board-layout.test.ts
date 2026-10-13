@@ -92,6 +92,11 @@ describe('spread board stage layout', () => {
     const layout = buildSpreadStageLayout(board, board.coordinates.map((entry) => entry.key))
 
     expect(layout.captions).toHaveLength(10)
+    for (let i = 0; i < layout.cards.length; i++) {
+      for (let j = i + 1; j < layout.cards.length; j++) {
+        expect(intersects(layout.cards[i]!.rect, layout.cards[j]!.rect), `${i} overlaps ${j}`).toBe(i === 0 && j === 1)
+      }
+    }
 
     for (const caption of layout.captions) {
       const card = layout.cards.find((entry) => entry.key === caption.key)!
