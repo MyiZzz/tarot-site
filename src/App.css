@@ -1296,14 +1296,6 @@
 .tarot-card-figure__frame--ribbon {
   background: rgba(245, 239, 231, 0.26);
 }
-.tarot-card-figure__glyphs {
-  position: absolute;
-  inset: 1rem 1rem auto auto;
-  display: grid;
-  gap: 0.2rem;
-  color: rgba(19, 35, 50, 0.42);
-  font-size: 0.74rem;
-}
 .tarot-card-figure__footer {
   align-items: flex-end;
 }

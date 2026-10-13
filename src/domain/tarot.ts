@@ -111,7 +111,6 @@ export interface DrawnCard {
 
 export interface CardArtManifest {
   frame: 'sun' | 'moon' | 'gate' | 'ribbon'
-  glyphs: string[]
 }
 
 export interface ReadingPreferences {

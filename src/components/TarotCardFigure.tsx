@@ -81,12 +81,6 @@ export function TarotCardFigure({
                 loading={loading}
               />
             </div>
-
-            <div className="tarot-card-figure__glyphs" aria-hidden="true">
-              {art.glyphs.map((glyph, index) => (
-                <span key={`${card.id}-${glyph}-${index}`}>{glyph}</span>
-              ))}
-            </div>
           </div>
 
           <div className="tarot-card-figure__footer">

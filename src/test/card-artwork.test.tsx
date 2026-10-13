@@ -1,5 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { TarotCardFigure } from '../components/TarotCardFigure'
+import { TAROT_DECK } from '../data/cards'
+import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { CardArtwork } from '../components/CardArtwork'
 import { CARD_IMAGE_ASSET_BY_ID } from '../data/cardImages'
 
@@ -30,6 +33,14 @@ describe('card artwork recovery', () => {
     Object.defineProperty(screen.getByRole('img'), 'currentSrc', { value: `https://example.test/card.${format}` })
     fireEvent.error(screen.getByRole('img'))
     expect(container.querySelectorAll('source')).toHaveLength(0)
-    expect(screen.getByRole('img').getAttribute('src')).toMatch(format === 'jpg' ? /^data:/ : /\.jpg$/)
+    expect(screen.getByRole('img').getAttribute('src')).toMatch(format === 'jpg' ? /^data:/ : /\.jpg\?v=[a-f0-9]{16}$/)
   })
+})
+
+it('leaves scanned artwork free of procedural glyph overlays', () => {
+  const card = TAROT_DECK[0]
+  const { container } = render(<TarotCardFigure card={card} art={CARD_ART_MANIFEST[card.id]} revealed />)
+  expect(container.querySelector('.tarot-card-figure__glyphs')).toBeNull()
+  expect(container.querySelector('.tarot-card-figure__frame')?.textContent).toBe('')
+  expect(CARD_ART_MANIFEST[card.id]).not.toHaveProperty('glyphs')
 })

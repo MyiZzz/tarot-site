@@ -29,7 +29,7 @@ export default defineConfig({
         // Cache the app shell, not all 78 artworks. Viewed images remain available offline.
         globPatterns: ['**/*.{js,css,html}', 'icon-*.png', 'favicon.svg'],
         runtimeCaching: [{
-          urlPattern: /\/cards\/rws\/[^/]+\.(?:avif|webp|jpg)$/,
+          urlPattern: /\/cards\/rws\/[^/]+\.(?:avif|webp|jpg)(?:\?.*)?$/,
           handler: 'CacheFirst',
           options: { cacheName: 'tarot-artwork', expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 } },
         }],

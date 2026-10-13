@@ -1,5 +1,7 @@
 import sharp from 'sharp'
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { CARD_IMAGE_VERSION_BY_ID } from '../data/cardImageDimensions'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CARD_IMAGE_ASSET_BY_ID } from '../data/cardImages'
@@ -13,10 +15,21 @@ describe('rws card image mapping', () => {
     for (const card of TAROT_DECK) {
       const asset = CARD_IMAGE_ASSET_BY_ID[card.id]
       const base = `${import.meta.env.BASE_URL}cards/rws/${card.id}`
-      expect(asset.fallbackUrl).toBe(`${base}.jpg`)
-      expect(asset.avifSrcSet).toBe(`${base}-240.avif 240w, ${base}-480.avif 480w`)
-      expect(asset.detailAvifSrcSet).toBe(`${base}-240.avif 240w, ${base}-480.avif 480w, ${base}-768.avif 768w`)
-      expect(asset.webpSrcSet).toBe(`${base}-240.webp 240w, ${base}-480.webp 480w`)
+      const version = `?v=${CARD_IMAGE_VERSION_BY_ID[card.id]}`
+      expect(asset.fallbackUrl).toBe(`${base}.jpg${version}`)
+      expect(asset.avifSrcSet).toBe(`${base}-240.avif${version} 240w, ${base}-480.avif${version} 480w`)
+      expect(asset.detailAvifSrcSet).toBe(`${base}-240.avif${version} 240w, ${base}-480.avif${version} 480w, ${base}-768.avif${version} 768w`)
+      expect(asset.webpSrcSet).toBe(`${base}-240.webp${version} 240w, ${base}-480.webp${version} 480w`)
+    }
+  })
+
+  it('versions URLs from all shipped derivative bytes', () => {
+    for (const card of TAROT_DECK) {
+      const files = [`${card.id}.jpg`, ...[240, 480, 768].flatMap(width =>
+        (width === 768 ? ['avif'] : ['avif', 'webp']).map(format => `${card.id}-${width}.${format}`),
+      )]
+      const version = createHash('sha256').update(Buffer.concat(files.map(file => readFileSync(join(cardsDir, file))))).digest('hex').slice(0, 16)
+      expect(CARD_IMAGE_VERSION_BY_ID[card.id]).toBe(version)
     }
   })
 

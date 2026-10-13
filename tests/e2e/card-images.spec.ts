@@ -8,7 +8,7 @@ for (const dpr of [1, 2, 3]) {
     const artwork = page.locator('.daily-card-slot picture img')
     await expect(artwork).toHaveAttribute('loading', 'eager')
     await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
-    expect(await artwork.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(new RegExp(`-${dpr === 1 ? 240 : 480}\\.avif$`))
+    expect(await artwork.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(new RegExp(`-${dpr === 1 ? 240 : 480}\\.avif\\?v=[a-f0-9]{16}$`))
     await page.getByRole('button', { name: '揭晓今日能量' }).click()
     expect(await artwork.evaluate((img) => img.getBoundingClientRect().width)).toBeLessThanOrEqual(203)
     await context.close()
@@ -23,14 +23,14 @@ for (const failure of ['abort', '404'] as const) {
         const url = route.request().url()
         requests.push(url)
         const formats = ['avif', 'webp', 'jpg'].slice(0, failCount)
-        if (formats.some((format) => url.endsWith(`.${format}`))) {
+        if (formats.some((format) => new URL(url).pathname.endsWith(`.${format}`))) {
           if (failure === 'abort') await route.abort()
           else await route.fulfill({ status: 404, body: '' })
         } else await route.continue()
       })
       await page.goto('/')
       const artwork = page.locator('.daily-card-slot picture img')
-      const expected = failCount === 3 ? /^data:image\/svg\+xml,/ : failCount === 2 ? /\.jpg$/ : /\.webp$/
+      const expected = failCount === 3 ? /^data:image\/svg\+xml,/ : failCount === 2 ? /\.jpg\?v=[a-f0-9]{16}$/ : /\.webp\?v=[a-f0-9]{16}$/
       await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(expected)
       await expect.poll(() => artwork.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
       if (failCount === 3) await expect(artwork).toHaveAttribute('alt', /图片暂不可用/)
@@ -59,7 +59,7 @@ for (const dpr of [1, 2, 3]) {
     // Browsers may reuse the already-downloaded daily source for this same card.
     await expect.poll(() => thumbnail.evaluate((img: HTMLImageElement) => img.currentSrc)).toBeTruthy()
     const thumbnailSource = await thumbnail.evaluate((img: HTMLImageElement) => img.currentSrc)
-    expect(/-240\.avif$/.test(thumbnailSource) || thumbnailSource === dailySource).toBe(true)
+    expect(/-240\.avif\?v=[a-f0-9]{16}$/.test(thumbnailSource) || thumbnailSource === dailySource).toBe(true)
     expect(await thumbnail.locator('..').locator('source').first().getAttribute('srcset')).not.toContain('768w')
     const encyclopedia = page.locator('#encyclopedia')
     await encyclopedia.scrollIntoViewIfNeeded()
@@ -68,7 +68,7 @@ for (const dpr of [1, 2, 3]) {
     await expect.poll(() => detail.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
     const width = await detail.evaluate((img) => img.getBoundingClientRect().width)
     const expected = [240, 480, 768].find((candidate) => candidate >= width * dpr) ?? 768
-    await expect.poll(() => detail.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(new RegExp(`-${expected}\\.avif$`))
+    await expect.poll(() => detail.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(new RegExp(`-${expected}\\.avif\\?v=[a-f0-9]{16}$`))
     await context.close()
   })
 }
