@@ -730,7 +730,6 @@
 }
 
 .check-card strong,
-.history-card strong,
 .encyclopedia-chip strong,
 .encyclopedia-detail h3,
 .follow-up-card strong {
@@ -739,7 +738,6 @@
 }
 
 .check-card p,
-.history-card p,
 .follow-up-card p,
 .encyclopedia-detail p {
   margin: 6px 0 0;
@@ -760,7 +758,6 @@
 }
 
 .follow-up-card,
-.history-card,
 .encyclopedia-detail {
   padding: 16px 0;
   border: 0;
@@ -769,35 +766,13 @@
   background: transparent;
 }
 
-.follow-up-card .question-echo,
-.history-card .question-echo {
+.follow-up-card .question-echo {
   margin-top: 8px;
 }
 
-.history-card summary {
-  display: flex;
-  gap: 14px;
-  justify-content: space-between;
-  align-items: flex-start;
-  cursor: pointer;
-  list-style: none;
-}
-
-.history-card summary::-webkit-details-marker {
-  display: none;
-}
-
-.history-card summary small,
 .encyclopedia-chip small,
 .encyclopedia-detail__header p {
   color: var(--text-soft);
-}
-
-.history-card summary span {
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  color: var(--text-soft);
-  background: rgba(246, 234, 208, 0.06);
 }
 
 .history-meta {
@@ -1047,7 +1022,6 @@
     min-height: 72px;
   }
 
-  .history-card summary,
   .encyclopedia-detail__header,
   .result-panel--accordion summary {
     align-items: flex-start;
@@ -1321,35 +1295,6 @@
 .tarot-card-figure__frame--ribbon {
   background: rgba(245, 239, 231, 0.26);
 }
-.tarot-card-figure__motif {
-  font-size: clamp(2rem, 4vw, 3rem);
-  letter-spacing: 0.08rem;
-}
-.tarot-card-figure__constellation {
-  position: absolute;
-  top: 0.9rem;
-  left: 1rem;
-  color: rgba(19, 35, 50, 0.58);
-  font-size: 0.76rem;
-}
-.tarot-card-figure__pips {
-  position: absolute;
-  inset: auto 0 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0 1rem;
-  color: rgba(19, 35, 50, 0.72);
-}
-.tarot-card-figure__court {
-  position: absolute;
-  inset: auto 0 1rem;
-  text-align: center;
-  color: rgba(19, 35, 50, 0.62);
-  font-size: 0.82rem;
-  letter-spacing: 0.08rem;
-}
 .tarot-card-figure__glyphs {
   position: absolute;
   inset: 1rem 1rem auto auto;
@@ -1381,26 +1326,6 @@
   background: rgba(20, 33, 44, 0.08);
   color: rgba(20, 33, 44, 0.82);
   font-size: 0.74rem;
-}
-.tarot-card-figure__mini {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 5 / 7;
-  padding: 12px;
-  border: 1px solid rgba(236, 225, 199, 0.14);
-  border-radius: 18px;
-  color: #18212a;
-  background: linear-gradient(180deg, rgba(242, 236, 225, 0.96), rgba(228, 220, 207, 0.94));
-  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.18);
-}
-.tarot-card-figure__mini-name {
-  display: block;
-  max-width: 4.5em;
-  text-align: center;
-  font-family: var(--font-accent);
-  font-size: 0.92rem;
-  line-height: 1.45;
-  letter-spacing: 0.08rem;
 }
 .spread-board-shell {
   position: relative;
@@ -1909,7 +1834,7 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
 .layout > *, .daily-layout > *, .spread-board-shell, .spread-board-scroll, .result-grid > * { min-width: 0; }
 .stitch-mobile-nav { display: none; }
 .stitch-mobile-spacer { display: none; }
-#daily, #reading, #result, #records, #encyclopedia, #main-content { scroll-margin-top: 104px; }
+#daily, #reading, #result, #records, #encyclopedia, #encyclopedia-detail, #main-content { scroll-margin-top: 104px; }
 .skip-link { position: fixed; left: 1rem; top: -100px; z-index: 100; padding: 1rem; border-radius: var(--radius-sm); background: var(--primary); color: var(--on-primary); }
 .skip-link:focus { top: 1rem; }
 @media (max-width: 899px) {
@@ -1926,7 +1851,7 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   .hero-orbit__star { right: 22px; top: 20px; font-size: 22px; }
   .hero-orbit__caption { display: none; }
   .topic-selector .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  #daily, #reading, #result, #records, #encyclopedia { scroll-margin-top: 80px; }
+  #daily, #reading, #result, #records, #encyclopedia, #encyclopedia-detail { scroll-margin-top: 80px; }
 }
 @media (max-width: 640px) {
   .stitch-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-6); }

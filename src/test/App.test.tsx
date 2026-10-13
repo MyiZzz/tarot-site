@@ -47,18 +47,18 @@ describe('App tarot flow', () => {
 
       await user.click(screen.getByRole('button', { name: '洗牌并抽牌' }))
 
-      expect(screen.queryByText('现状')).not.toBeInTheDocument()
-      expect(screen.queryByText('阻碍')).not.toBeInTheDocument()
-      expect(screen.queryByText('建议')).not.toBeInTheDocument()
+      expect(screen.queryByText('现状', { selector: 'strong' })).not.toBeInTheDocument()
+      expect(screen.queryByText('阻碍', { selector: 'strong' })).not.toBeInTheDocument()
+      expect(screen.queryByText('建议', { selector: 'strong' })).not.toBeInTheDocument()
       expect(screen.getByRole('button', { name: '分享文案' })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: '下载海报' })).toBeInTheDocument()
       expect(screen.getByTestId('follow-up-accordion')).not.toHaveAttribute('open')
 
       await user.click(screen.getByRole('button', { name: '全部揭晓' }))
 
-      expect(await screen.findByText('现状')).toBeInTheDocument()
-      expect(screen.getByText('阻碍')).toBeInTheDocument()
-      expect(screen.getByText('建议')).toBeInTheDocument()
+      expect(await screen.findByText('现状', { selector: 'strong' })).toBeInTheDocument()
+      expect(screen.getByText('阻碍', { selector: 'strong' })).toBeInTheDocument()
+      expect(screen.getByText('建议', { selector: 'strong' })).toBeInTheDocument()
       expect(screen.getByRole('heading', { name: '记录中心' })).toBeInTheDocument()
       expect(screen.getAllByText(questionText).length).toBeGreaterThan(0)
 

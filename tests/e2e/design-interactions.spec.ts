@@ -70,7 +70,6 @@ test('desktop spread fits its panel and reveals with a 3D animation', async ({ p
 })
 
 test('keyboard reveal preserves focus through all three positions', async ({ page }) => {
-  // DESIGN R3 owns the stable controls/focus fix; an unexpected pass requires removing this marker.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await page.getByLabel('占卜问题').fill('下一步该怎么走？')
@@ -85,7 +84,6 @@ test('keyboard reveal preserves focus through all three positions', async ({ pag
     await expect(control).toBeFocused()
     await page.keyboard.press(index === 1 ? 'Space' : 'Enter')
     await expect(page.locator('.spread-board__cards-layer .is-revealed')).toHaveCount(index + 1)
-    if (index === 0) test.fail(true, 'DESIGN R3: revealing currently replaces the focused button with a div')
     await expect.poll(() => page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY')
     if (index < 2) {
       // Both supported designs work: retain this control then Tab, or focus the next automatically.
@@ -108,14 +106,12 @@ test('unrevealed cards have distinct position names for assistive technology', a
   await expect(slots).toHaveCount(3)
   for (const slot of await slots.all()) {
     const label = (await slot.locator('.spread-board__mobile-label').innerText()).replace('牌位 · ', '')
-    test.fail(true, 'DESIGN R3: all reveal controls currently share the same accessible name')
     await expect(slot.getByRole('button')).toHaveAccessibleName(new RegExp(label))
   }
 })
 
 for (const width of [390, 768]) {
   test(`selection brings encyclopedia details above mobile navigation at ${width}px`, async ({ page }) => {
-    // DESIGN R3 owns the fix. Remove this annotation after integration; unexpected passes fail CI.
     await page.setViewportSize({ width, height: 844 })
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
@@ -124,7 +120,6 @@ for (const width of [390, 768]) {
     await page.locator('#encyclopedia').getByRole('button', { name: /女祭司/ }).click()
     const heading = page.getByRole('heading', { name: '女祭司', exact: true })
     // No scrollIntoView here: selecting a card must perform navigation itself.
-    test.fail(true, 'DESIGN R3: the unbounded chooser leaves selected details below the viewport')
     await expect(heading).toBeInViewport({ ratio: 1 })
     const box = (await heading.boundingBox())!
     const header = (await page.locator('.stitch-topbar').boundingBox())!

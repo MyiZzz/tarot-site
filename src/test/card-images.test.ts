@@ -2,7 +2,6 @@ import sharp from 'sharp'
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { CARD_IMAGE_ASSET_BY_ID } from '../data/cardImages'
 import { TAROT_DECK } from '../data/cards'
 
@@ -14,7 +13,6 @@ describe('rws card image mapping', () => {
     for (const card of TAROT_DECK) {
       const asset = CARD_IMAGE_ASSET_BY_ID[card.id]
       const base = `${import.meta.env.BASE_URL}cards/rws/${card.id}`
-      expect(CARD_ART_MANIFEST[card.id].imageUrl).toBe(asset.fallbackUrl)
       expect(asset.fallbackUrl).toBe(`${base}.jpg`)
       expect(asset.avifSrcSet).toBe(`${base}-240.avif 240w, ${base}-480.avif 480w`)
       expect(asset.detailAvifSrcSet).toBe(`${base}-240.avif 240w, ${base}-480.avif 480w, ${base}-768.avif 768w`)

@@ -1,7 +1,7 @@
 # Browser regression checks
 
 Run `npm run build` followed by `npx playwright test`. Playwright starts its own
-Vite preview on port 4302 and stops it afterwards. Set `PLAYWRIGHT_PORT` to change
+Vite preview on port 4310 and stops it afterwards. Set `PLAYWRIGHT_PORT` to change
 that port; existing servers are never reused.
 
 Chromium covers readings, daily guidance, persistence, image fallbacks, responsive
@@ -23,14 +23,8 @@ npx playwright test visual-views --workers=2
 ```
 
 Inspect every changed PNG in `visual-views.spec.ts-snapshots/` before accepting it.
-Baseline refreshes after the DESIGN R3 merge are expected. Current baselines record
-the existing layout; they do not certify that the known DESIGN issues are fixed.
-
-Four DESIGN R3 regressions in `design-interactions.spec.ts` use `test.fail`:
-keyboard focus continuity, distinct position names, and selected encyclopedia
-heading visibility at 390px and 768px. These assertions run and reproduce the
-known defects without editing another workstream's components. Remove each
-annotation when its fix merges: Playwright fails on an unexpected pass. The
+The DESIGN regression checks cover keyboard focus continuity, distinct position
+names, and selected encyclopedia heading visibility at 390px and 768px. The
 selection tests deliberately never scroll the detail into view themselves.
 
 The optional WebKit project covers mobile/desktop responsive image decoding,

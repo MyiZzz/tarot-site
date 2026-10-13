@@ -1,4 +1,5 @@
 import { useDeferredValue, useState } from 'react'
+import { scrollToSection } from '../lib/scroll'
 import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { TAROT_DECK } from '../data/cards'
 import { TOPIC_BY_ID } from '../data/topics'
@@ -196,7 +197,12 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
                   card.id === resolvedSelectedCardId ? 'is-active' : ''
                 }`}
                 type="button"
-                onClick={() => setSelectedCardId(card.id)}
+                onClick={() => {
+                  setSelectedCardId(card.id)
+                  if (window.matchMedia('(max-width: 900px)').matches) {
+                    requestAnimationFrame(() => scrollToSection('encyclopedia-detail'))
+                  }
+                }}
               >
                 <strong>{card.nameZh}</strong>
                 <small>{card.nameEn}</small>
@@ -212,7 +218,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
         </div>
 
         {selectedCard ? (
-          <article className="encyclopedia-detail">
+          <article id="encyclopedia-detail" className="encyclopedia-detail">
             <div className="encyclopedia-detail__header">
               <div>
                 <p className="eyebrow">

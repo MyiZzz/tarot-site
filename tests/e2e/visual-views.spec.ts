@@ -9,7 +9,7 @@ async function capture(page: Page, name: string) {
       return box.bottom > 0 && box.top < innerHeight && box.width > 0
     }).map(image => image.decode().catch(() => undefined)))
   })
-  await expect(page).toHaveScreenshot(`${name}.png`, { animations: 'disabled', scale: 'css' })
+  await expect.soft(page).toHaveScreenshot(`${name}.png`, { animations: 'disabled', scale: 'css' })
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width)
 }
 
