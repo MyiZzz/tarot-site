@@ -120,9 +120,11 @@ export function TarotCardFigure({
 
           <div className={`tarot-card-figure__frame tarot-card-figure__frame--${art.frame}`}>
             {shouldShowArtwork ? (
-              <div className="tarot-card-figure__image-wrap">
+              <div className="tarot-card-figure__image-wrap" style={{ aspectRatio: `${imageAsset.width} / ${imageAsset.height}` }}>
                 <CardArtwork
-                  asset={imageAsset}
+                  asset={loading === 'lazy' && imageProfile === 'detail'
+                    ? { ...imageAsset, avifSrcSet: imageAsset.detailAvifSrcSet }
+                    : imageAsset}
                   className={`tarot-card-figure__image ${
                     orientation === 'down' ? 'is-reversed' : ''
                   }`}

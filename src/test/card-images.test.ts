@@ -17,6 +17,7 @@ describe('rws card image mapping', () => {
       expect(CARD_ART_MANIFEST[card.id].imageUrl).toBe(asset.fallbackUrl)
       expect(asset.fallbackUrl).toBe(`${base}.jpg`)
       expect(asset.avifSrcSet).toBe(`${base}-240.avif 240w, ${base}-480.avif 480w`)
+      expect(asset.detailAvifSrcSet).toBe(`${base}-240.avif 240w, ${base}-480.avif 480w, ${base}-768.avif 768w`)
       expect(asset.webpSrcSet).toBe(`${base}-240.webp 240w, ${base}-480.webp 480w`)
     }
   })
@@ -28,8 +29,8 @@ describe('rws card image mapping', () => {
       expect(asset.width).toBe(fallback.width)
       expect(asset.height).toBe(fallback.height)
       expect(fallback.width).toBe(240)
-      for (const width of [240, 480]) {
-        for (const format of ['avif', 'webp']) {
+      for (const width of [240, 480, 768]) {
+        for (const format of width === 768 ? ['avif'] : ['avif', 'webp']) {
           const candidate = await sharp(join(cardsDir, `${card.id}-${width}.${format}`)).metadata()
           expect(candidate.width).toBe(width)
           expect(candidate.height! / width).toBeCloseTo(asset.height / asset.width, 2)
@@ -41,9 +42,9 @@ describe('rws card image mapping', () => {
 
   it('keeps originals and legacy variants out of the shipped asset budget', () => {
     const files = readdirSync(cardsDir)
-    expect(files).toHaveLength(78 * 5)
+    expect(files).toHaveLength(78 * 6)
     expect(files.every((file) => statSync(join(cardsDir, file)).isFile())).toBe(true)
-    expect(files.reduce((bytes, file) => bytes + statSync(join(cardsDir, file)).size, 0)).toBeLessThan(9_000_000)
+    expect(files.reduce((bytes, file) => bytes + statSync(join(cardsDir, file)).size, 0)).toBeLessThan(9_400_000)
     expect(statSync(join(process.cwd(), 'public/og-cover.png')).size).toBeLessThan(100_000)
     expect(existsSync(join(process.cwd(), 'assets-src/cards/rws/SOURCE.txt'))).toBe(true)
   })

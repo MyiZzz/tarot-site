@@ -8,7 +8,9 @@ const root = fileURLToPath(new URL('../', import.meta.url))
 const sourceDir = join(root, 'assets-src/cards/rws')
 const outputDir = join(root, 'public/cards/rws')
 const cachePath = join(root, 'assets-src/generated-assets.json')
-const widths = [240, 480]
+const widths = [240, 480, 768]
+// The high-density detail candidate uses AVIF to keep the full deck under budget.
+const formatsFor = (width) => width === 768 ? ['avif'] : ['avif', 'webp']
 const hash = (data) => createHash('sha256').update(data).digest('hex')
 const pipelineHash = hash(await readFile(fileURLToPath(import.meta.url))) + JSON.stringify(sharp.versions)
 const previous = JSON.parse(await readFile(cachePath, 'utf8').catch(() => '{}'))
@@ -31,14 +33,14 @@ for (const file of files) {
   const fingerprint = hash(input) + pipelineHash
   const fallbackPath = join(outputDir, `${id}.jpg`)
   const outputs = [fallbackPath, ...widths.flatMap((width) =>
-    ['avif', 'webp'].map((format) => join(outputDir, `${id}-${width}.${format}`)),
+    formatsFor(width).map((format) => join(outputDir, `${id}-${width}.${format}`)),
   )]
   if (!await isCurrent(id, fingerprint, outputs)) {
     for (const width of widths) {
       // Mild smoothing suppresses scanned paper grain before encoding.
       const resized = sharp(input).resize({ width }).blur(0.6)
-      await resized.clone().avif({ quality: 35, effort: 4 }).toFile(join(outputDir, `${id}-${width}.avif`))
-      await resized.clone().webp({ quality: 50, effort: 5 }).toFile(join(outputDir, `${id}-${width}.webp`))
+      await resized.clone().avif({ quality: width === 768 ? 20 : 35, effort: 4 }).toFile(join(outputDir, `${id}-${width}.avif`))
+      if (width !== 768) await resized.clone().webp({ quality: 30, effort: 5 }).toFile(join(outputDir, `${id}-${width}.webp`))
     }
     await sharp(input).resize({ width: 240 }).jpeg({ mozjpeg: true, quality: 60 }).toFile(fallbackPath)
     generated++
@@ -65,3 +67,7 @@ await writeIfChanged(join(root, 'src/data/cardImageDimensions.ts'),
 )
 await writeIfChanged(cachePath, JSON.stringify(next, null, 2) + '\n')
 console.log(`Card assets: ${generated} generated, ${files.length - generated} unchanged.`)
+
+for (const size of [192, 512]) {
+  await sharp(join(root, 'public/favicon.svg')).resize(size, size).png().toFile(join(root, `public/icon-${size}.png`))
+}

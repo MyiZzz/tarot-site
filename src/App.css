@@ -1206,7 +1206,6 @@
 .tarot-card-figure__inner {
   position: relative;
   width: 100%;
-  aspect-ratio: 5 / 8;
   transform-style: preserve-3d;
   transition: transform var(--motion-reveal) var(--ease-out);
 }
@@ -1251,6 +1250,7 @@
   letter-spacing: 0.18rem;
 }
 .tarot-card-figure__face--front {
+  position: relative;
   display: grid;
   align-content: space-between;
   padding: 18px;
@@ -1281,7 +1281,7 @@
   z-index: 1;
   display: grid;
   place-items: center;
-  min-height: 11.5rem;
+  min-height: 0;
   margin: 16px 0 14px;
   border-radius: 1.2rem;
   border: 1px solid rgba(20, 33, 44, 0.1);
@@ -1290,14 +1290,13 @@
 .tarot-card-figure__image-wrap {
   position: relative;
   width: 100%;
-  height: 100%;
-  border-radius: 0.95rem;
-  overflow: hidden;
+  border-radius: 0;
 }
 .tarot-card-figure__image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  display: block;
   transform-origin: center;
   transition: transform 240ms ease;
 }
@@ -1305,10 +1304,10 @@
   transform: rotate(180deg);
 }
 .tarot-card-figure:hover .tarot-card-figure__image {
-  transform: scale(1.02);
+  transform: none;
 }
 .tarot-card-figure:hover .tarot-card-figure__image.is-reversed {
-  transform: rotate(180deg) scale(1.02);
+  transform: rotate(180deg);
 }
 .tarot-card-figure__frame--sun {
   background: rgba(255, 247, 232, 0.3);
@@ -2010,6 +2009,14 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   .draw-summary .draw-guidance { padding: 0; border: 0; background: none; font-size: 12px; }
   .encyclopedia-panel .utility-toggle, #records .utility-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .encyclopedia-panel .utility-toggle .pill, #records .utility-toggle .pill { padding: 12px; }
+}
+
+/* The spatial board uses measured slots; contain keeps artwork whole inside them. */
+@media (min-width: 641px) {
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__inner { aspect-ratio: 5 / 8; }
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__face--front { position: absolute; grid-template-rows: auto minmax(0, 1fr) auto; }
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__image-wrap { height: 100%; min-height: 0; }
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__image-wrap picture { display: block; height: 100%; }
 }
 
 /* A full-size reading view preserves artwork and labels; the spatial layout remains available. */

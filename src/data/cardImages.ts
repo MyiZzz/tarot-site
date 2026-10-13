@@ -9,6 +9,7 @@ export interface CardImageAsset {
   width: number
   height: number
   fallbackUrl: string
+  detailAvifSrcSet: string
   avifSrcSet: string
   webpSrcSet: string
 }
@@ -20,6 +21,7 @@ export const CARD_IMAGE_ASSET_BY_ID: Record<string, CardImageAsset> = Object.fro
       width: CARD_IMAGE_DIMENSIONS_BY_ID[id][0],
       height: CARD_IMAGE_DIMENSIONS_BY_ID[id][1],
       fallbackUrl: `${CARD_ASSET_BASE_URL}${id}.jpg`,
+      detailAvifSrcSet: [240, 480, 768].map((width) => `${CARD_ASSET_BASE_URL}${id}-${width}.avif ${width}w`).join(', '),
       avifSrcSet: [240, 480].map((width) => `${CARD_ASSET_BASE_URL}${id}-${width}.avif ${width}w`).join(', '),
       webpSrcSet: [240, 480].map((width) => `${CARD_ASSET_BASE_URL}${id}-${width}.webp ${width}w`).join(', '),
     } satisfies CardImageAsset,

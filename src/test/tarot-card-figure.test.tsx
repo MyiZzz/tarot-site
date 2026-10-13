@@ -55,6 +55,7 @@ describe('TarotCardFigure compact mode', () => {
     expect(artwork).toHaveAttribute('alt', `${card.nameZh}（${card.nameEn}）牌面`)
     expect(artwork).not.toHaveAttribute('srcset')
     expect(artwork.closest('picture')?.firstElementChild).toHaveAttribute('type', 'image/avif')
+    expect(artwork.closest('picture')?.firstElementChild?.getAttribute('srcset')).toContain('768w')
 
     const headerSpans = container.querySelectorAll('.tarot-card-figure__header span')
 
@@ -77,6 +78,7 @@ describe('TarotCardFigure image loading', () => {
       expect(source.getAttribute('sizes')).not.toContain('auto')
       expect(source.getAttribute('srcset')).toContain('240w')
       expect(source.getAttribute('srcset')).toContain('480w')
+      expect(source.getAttribute('srcset')).not.toContain('768w')
     }
   })
 

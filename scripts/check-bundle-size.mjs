@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir, stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 
@@ -10,6 +10,14 @@ const EAGER_DYNAMIC_ENTRIES = ['src/lib/daily.ts']
 const dist = resolve(process.argv[2] ?? 'dist')
 
 try {
+  const files = await readdir(dist, { recursive: true })
+  let distBytes = 0
+  for (const file of files) {
+    const info = await stat(resolve(dist, file))
+    if (info.isFile()) distBytes += info.size
+  }
+  console.log(`Total dist: ${distBytes} / 10000000 bytes`)
+  if (distBytes >= 10_000_000) throw new Error('dist must remain below 10MB.')
   const manifest = JSON.parse(await readFile(resolve(dist, '.vite/manifest.json'), 'utf8'))
   const entries = Object.entries(manifest).filter(([, chunk]) => chunk.isEntry)
   if (entries.length === 0) throw new Error('No entry chunks found; run npm run build first.')

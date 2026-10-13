@@ -235,3 +235,7 @@ npm run test:e2e
 ## License
 
 本仓库使用 [MIT License](./LICENSE)。
+
+构建会生成轻量 PWA：缓存应用代码和已查看的牌面（最多 100 个资源），不会预下载整副牌。离线时未缓存的牌面显示占位图；新版本会在旧标签页关闭后接管，避免打断正在填写的内容。
+
+构建使用 `SITE_URL=https://your-production-origin/ npm run build` 生成首页 sitemap 和 robots 中的 sitemap 地址（支持子路径）。未设置 `SITE_URL` 时仍生成 robots.txt 与空 sitemap.xml，不猜测正式域名。安装图标由现有 favicon 在 `assets:optimize` 中生成。
