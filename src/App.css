@@ -63,36 +63,6 @@
   padding: 40px;
 }
 
-.hero__seal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  min-width: 6rem;
-  padding: 20px 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(236, 225, 199, 0.14);
-  color: var(--text-main);
-  background: rgba(246, 234, 208, 0.04);
-}
-
-.hero__seal-mark {
-  font-size: 1.42rem;
-  font-weight: 600;
-  letter-spacing: 0.18rem;
-  writing-mode: vertical-rl;
-}
-
-.hero__seal-sub {
-  margin-top: 0;
-  font-family: var(--font-accent);
-  font-size: 0.82rem;
-  letter-spacing: 0.16rem;
-  text-transform: uppercase;
-  writing-mode: vertical-rl;
-}
-
 .hero__copy {
   display: grid;
   gap: 12px;
@@ -249,8 +219,7 @@
 .pill span,
 .spread-card h3,
 .draw-summary__row p,
-.question-echo,
-.reading-entry__title strong {
+.question-echo {
   font-size: 1.08rem;
 }
 
@@ -423,14 +392,6 @@
   margin-bottom: 0;
 }
 
-.draw-layout {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 18px;
-  align-items: center;
-}
-
 .daily-layout {
   position: relative;
   z-index: 1;
@@ -501,9 +462,7 @@
 }
 
 .draw-summary__row span,
-.result-list span,
 .advice-list,
-.reading-entry p,
 .result-panel p {
   color: var(--text-soft);
 }
@@ -515,7 +474,6 @@
 
 .draw-summary__row p,
 .result-panel p,
-.result-list,
 .advice-list {
   margin: 0;
 }
@@ -569,13 +527,6 @@
   transform: none;
 }
 
-.card-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 18px;
-}
-
 .result-grid {
   position: relative;
   z-index: 1;
@@ -597,12 +548,6 @@
 .result-panel__stack {
   display: grid;
   gap: 12px;
-}
-
-.result-panel__divider {
-  width: min(100%, 22rem);
-  height: 1px;
-  background: rgba(205, 168, 105, 0.24);
 }
 
 .result-panel--highlighted {
@@ -670,44 +615,14 @@
   font-size: 1.1rem;
 }
 
-.result-list,
 .advice-list {
   display: grid;
   gap: 10px;
   padding-left: 1.15rem;
 }
 
-.result-list li,
 .advice-list li {
   padding-left: 0.1rem;
-}
-
-.result-list strong,
-.reading-entry__title span {
-  color: var(--text-main);
-}
-
-.reading-entries {
-  display: grid;
-  gap: 14px;
-}
-
-.reading-entry {
-  padding: 14px 0 0;
-  border-top: 1px solid rgba(238, 215, 170, 0.1);
-}
-
-.reading-entry:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.reading-entry__title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: baseline;
-  margin-bottom: 8px;
 }
 
 .check-card {
@@ -918,7 +833,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .card-grid,
   .result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -944,14 +858,6 @@
   .daily-layout {
     grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
     align-items: start;
-  }
-
-  .draw-layout {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  }
-
-  .card-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .result-grid {
@@ -989,17 +895,6 @@
 
   .hero {
     grid-template-columns: 1fr;
-  }
-
-  .hero__seal {
-    justify-self: start;
-    flex-direction: row;
-    gap: 8px;
-  }
-
-  .hero__seal-mark,
-  .hero__seal-sub {
-    writing-mode: horizontal-tb;
   }
 
   .section,
@@ -1866,12 +1761,12 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   .section__heading { flex-direction: row; align-items: flex-start; gap: var(--space-2); }
   .section__count { white-space: normal; max-width: 7rem; padding: 0.4rem 0.6rem; }
   .section h2 { font-size: 1.4rem; }
-  .reading-progress { gap: 6px; }
-  .reading-progress li { flex-direction: column; align-items: flex-start; font-size: 0.75rem; }
-  .spread-card { padding: var(--space-4); }
-  .spread-card__body { grid-template-columns: minmax(0, 1fr) 64px; gap: var(--space-3); }
+  .reading-progress { gap: 6px; margin-bottom: 16px; }
+  .reading-progress li { flex-direction: column; align-items: flex-start; font-size: 0.75rem; padding-block: 8px; }
+  .spread-card { min-height: 80px; padding: 12px; gap: 6px; }
+  .spread-card__body { grid-template-columns: minmax(0, 1fr) 64px; gap: var(--space-3); display: block; }
   .spread-preview { width: 64px; }
-  .draw-summary { padding: var(--space-4); }
+  .draw-summary { position: sticky; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 10; padding: 12px; gap: 8px; background: var(--surface-low); box-shadow: 0 -8px 24px #10101399; }
   .draw-summary__actions, .draw-summary__actions .primary-button { width: 100%; }
   .spread-board-scroll { overflow: visible; }
   .spread-board-stage { width: 100%; min-width: 0; height: auto; margin: 0; }
@@ -1886,6 +1781,29 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   .spread-board__cards-layer .tarot-card-figure__footer small { font-size: 0.7rem; }
   .spread-board__cards-layer .tarot-card-figure__back-sub { right: 10px; font-size: 0.6rem; letter-spacing: 0.04em; }
   .spread-board__reading-list { grid-template-columns: minmax(0, 1fr); }
+  html { scroll-padding-bottom: 220px; }
+  .stitch-panel--studio .section__heading { margin-bottom: 12px; }
+  .question-field textarea { min-height: 88px; padding: 12px; }
+  .question-suggestions { margin-block: 12px; }
+  .question-suggestions__list { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .question-suggestions__pill { flex-shrink: 0; max-width: 280px; padding: 10px 12px; font-size: 12px; }
+  .topic-selector .pill-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .topic-selector .pill { padding: 10px 6px; text-align: center; min-height: 44px; }
+  .topic-selector .pill small { display: none; }
+  .topic-selector > .selection-note { margin-top: 8px; font-size: 12px; }
+  .studio-step-title { margin: 20px 0 12px; }
+  .spread-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .spread-card__info h3 { font-size: 14px; margin: 0; }
+  .spread-card__info p, .spread-card .spread-preview { display: none; }
+  .spread-card__topline { font-size: 11px; gap: 4px; padding-right: 10px; }
+  .spread-card.is-active::after { top: 8px; right: 6px; font-size: 12px; }
+  .draw-summary__row { display: block; }
+  .draw-summary__row > span { display: none; }
+  .draw-summary__row p { margin: 0; font-size: 12px; }
+  .draw-summary .primary-button { min-height: 44px; padding: 10px; }
+  .draw-summary .draw-guidance { padding: 0; border: 0; background: none; font-size: 12px; }
+  .encyclopedia-panel .utility-toggle, #records .utility-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .encyclopedia-panel .utility-toggle .pill, #records .utility-toggle .pill { padding: 12px; }
 }
 
 .daily-card-slot .is-revealed .tarot-card-figure__inner,
@@ -1906,36 +1824,6 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
 .studio-guide summary { cursor: pointer; color: var(--primary); padding-block: 12px; min-height: 44px; }
 .studio-guide[open] summary { margin-bottom: var(--space-4); }
 .encyclopedia-detail--empty { align-content: center; min-height: 180px; color: var(--text-soft); }
-@media (max-width: 640px) {
-  html { scroll-padding-bottom: 220px; }
-  .stitch-panel--studio .section__heading { margin-bottom: 12px; }
-  .reading-progress { margin-bottom: 16px; }
-  .reading-progress li { padding-block: 8px; }
-  .question-field textarea { min-height: 88px; padding: 12px; }
-  .question-suggestions { margin-block: 12px; }
-  .question-suggestions__list { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
-  .question-suggestions__pill { flex-shrink: 0; max-width: 280px; padding: 10px 12px; font-size: 12px; }
-  .topic-selector .pill-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .topic-selector .pill { padding: 10px 6px; text-align: center; min-height: 44px; }
-  .topic-selector .pill small { display: none; }
-  .topic-selector > .selection-note { margin-top: 8px; font-size: 12px; }
-  .studio-step-title { margin: 20px 0 12px; }
-  .spread-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .spread-card { min-height: 80px; padding: 12px; gap: 6px; }
-  .spread-card__body { display: block; }
-  .spread-card__info h3 { font-size: 14px; margin: 0; }
-  .spread-card__info p, .spread-card .spread-preview { display: none; }
-  .spread-card__topline { font-size: 11px; gap: 4px; padding-right: 10px; }
-  .spread-card.is-active::after { top: 8px; right: 6px; font-size: 12px; }
-  .draw-summary { position: sticky; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 10; padding: 12px; gap: 8px; background: var(--surface-low); box-shadow: 0 -8px 24px #10101399; }
-  .draw-summary__row { display: block; }
-  .draw-summary__row > span { display: none; }
-  .draw-summary__row p { margin: 0; font-size: 12px; }
-  .draw-summary .primary-button { min-height: 44px; padding: 10px; }
-  .draw-summary .draw-guidance { padding: 0; border: 0; background: none; font-size: 12px; }
-  .encyclopedia-panel .utility-toggle, #records .utility-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .encyclopedia-panel .utility-toggle .pill, #records .utility-toggle .pill { padding: 12px; }
-}
 
 /* The spatial board uses measured slots; contain keeps artwork whole inside them. */
 @media (min-width: 641px) {
@@ -1980,9 +1868,6 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   #records .utility-toggle .pill { padding: 10px 4px; font-size: 12px; min-height: 44px; }
   #records .utility-toggle small { display: none; }
   #records .utility-row { gap: 12px; }
-}
-
-@media (max-width: 600px) {
   .result-actions--primary { flex-wrap: nowrap; }
   .result-actions__primary { flex: 1 1 auto; }
   .result-actions__secondary { width: auto; }

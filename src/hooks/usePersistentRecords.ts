@@ -3,7 +3,6 @@ import type { ReadingRecord } from '../domain/tarot'
 import {
   hydrateReadingRecordsFromDatabase,
   persistReadingRecordsToDatabase,
-  type RecordDatabaseBackend,
 } from '../engine/recordDatabase'
 import {
   exportReadingRecordsJson,
@@ -15,8 +14,6 @@ import {
 
 export const usePersistentRecords = () => {
   const [records, setRecords] = useState<ReadingRecord[]>(() => loadReadingRecords())
-  const [storageBackend, setStorageBackend] =
-    useState<RecordDatabaseBackend>('localstorage')
   const [storageReady, setStorageReady] = useState(false)
   const mountedRef = useRef(true)
 
@@ -29,7 +26,6 @@ export const usePersistentRecords = () => {
       }
 
       setRecords(result.records)
-      setStorageBackend(result.backend)
       setStorageReady(true)
     })
 
@@ -46,7 +42,6 @@ export const usePersistentRecords = () => {
         return
       }
 
-      setStorageBackend(result.backend)
       setStorageReady(true)
       setRecords(result.records)
     })
@@ -68,7 +63,6 @@ export const usePersistentRecords = () => {
 
   return {
     records,
-    storageBackend,
     storageReady,
     exportRecordsJson: () => exportReadingRecordsJson(records),
     importRecordsFromText,

@@ -50,6 +50,32 @@ try {
     deferredGzip += gzipSync(await readFile(resolve(dist, chunk.file))).length
   }
   console.log(`Deferred JS gzip (excluded from startup): ${deferredGzip} bytes`)
+  // Read the emitted worker so this follows the actual Workbox configuration.
+  // Installation overlaps startup downloads; these totals must not be added together.
+  const worker = await readFile(resolve(dist, 'sw.js'), 'utf8')
+  const precache = worker.match(/\bprecacheAndRoute\(\s*(\[[\s\S]*?\])/)
+  if (!precache) throw new Error('No service-worker precache manifest found.')
+  const precacheFiles = new Set([...precache[1].matchAll(/(?:\burl|"url")\s*:\s*"([^"]+)"/g)].map((match) => match[1]))
+  if (!precacheFiles.size) throw new Error('Service-worker precache manifest is empty.')
+  const workerFiles = new Set(['sw.js', ...[...worker.matchAll(/"(?:\.\/)?(workbox-[\w-]+)(?:\.js)?"/g)].map((match) => `${match[1]}.js`)])
+  const measure = async (paths) => {
+    let raw = 0
+    let gzip = 0
+    for (const path of paths) {
+      const bytes = await readFile(resolve(dist, path))
+      raw += bytes.length
+      gzip += gzipSync(bytes).length
+    }
+    return { raw, gzip }
+  }
+  const payload = await measure(precacheFiles)
+  const workers = await measure(workerFiles)
+  const optional = await measure(deferred.map(([, chunk]) => chunk.file).filter((file) => precacheFiles.has(file)))
+  console.log(`SW precache payload (${precacheFiles.size} files): ${payload.raw} bytes raw / ${payload.gzip} bytes gzip`)
+  console.log(`SW worker scripts: ${workers.raw} bytes raw / ${workers.gzip} bytes gzip`)
+  console.log(`SW installation total (cold cache; overlaps startup): ${payload.raw + workers.raw} bytes raw / ${payload.gzip + workers.gzip} bytes gzip`)
+  console.log(`Deferred JS included in precache: ${optional.gzip} bytes gzip`)
+  console.log('Gzip estimates assume per-file compression; actual transfer depends on hosting and HTTP cache reuse.')
   console.log(`Startup JS gzip: ${startupGzip} / ${STARTUP_GZIP_BUDGET} bytes`)
   if (startupGzip > STARTUP_GZIP_BUDGET) {
     throw new Error('Startup JS gzip exceeds budget (including eager dynamic imports).')

@@ -91,7 +91,6 @@ function App({ shuffleDelayMs }: AppProps) {
 
   const {
     records,
-    storageBackend,
     storageReady,
     exportRecordsJson,
     importRecordsFromText,
@@ -459,7 +458,6 @@ function App({ shuffleDelayMs }: AppProps) {
                     records={records}
                     recordsMessage={recordsMessage}
                     sectionId="records-content"
-                    storageBackend={storageBackend}
                     storageReady={storageReady}
                     tagFilter={recordTagFilter}
                   />
