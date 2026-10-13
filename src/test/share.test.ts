@@ -1,7 +1,7 @@
+import { buildReadingPosterSvg } from '../lib/poster'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createReading } from '../engine/reading'
 import {
-  buildReadingPosterSvg,
   buildReadingShareText,
   shareText,
 } from '../lib/share'

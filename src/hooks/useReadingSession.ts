@@ -13,7 +13,7 @@ import {
   buildReadingRecordFromReading,
   buildReadingRecordId,
 } from '../engine/storage'
-import { buildReadingShareText, downloadPosterPng, shareText } from '../lib/share'
+import { buildReadingShareText, shareText } from '../lib/share'
 
 const SHUFFLE_DELAY_BY_SPEED: Record<ReadingPreferences['shuffleSpeed'], number> = {
   fast: 480,
@@ -343,7 +343,7 @@ export const useReadingSession = ({
 
     try {
       const title = recordTitle.trim() || reading.input.question
-      const message = await downloadPosterPng(
+      const message = await (await import('../lib/poster')).downloadPosterPng(
         {
           title,
           question: reading.input.question,
