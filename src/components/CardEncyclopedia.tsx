@@ -181,7 +181,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
       <div className="encyclopedia-layout">
         <div
           className="encyclopedia-list encyclopedia-list--scroll"
-          role="list"
+          role="group"
           aria-label="牌卡列表"
           data-testid="encyclopedia-list"
         >

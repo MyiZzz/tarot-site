@@ -39,7 +39,7 @@ export function SpreadLayoutBoard({
 
   return (
     <div className="spread-board-shell">
-      <div className="spread-board-scroll">
+      <div className="spread-board-scroll" role="region" aria-label="牌阵桌面" tabIndex={0}>
         <div
           className="spread-board-stage"
           style={
