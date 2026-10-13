@@ -75,6 +75,8 @@ button {
   cursor: pointer;
 }
 
+a:focus-visible,
+summary:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
