@@ -62,6 +62,9 @@ test('populated viewport baselines retain navigation and the actual home hero', 
   await navigate(page, '牌卡百科')
   await page.getByRole('button', { name: /查看全部 78 张/ }).click()
   await expect(page.locator('.encyclopedia-chip')).toHaveCount(78)
+  // Lazy mounting can occur before or after the reading; choose a stable detail card.
+  await page.getByTestId('encyclopedia-list').getByRole('button', { name: /愚者/ }).click()
+  await navigate(page, '牌卡百科')
   await capture(page, '05-encyclopedia')
 })
 

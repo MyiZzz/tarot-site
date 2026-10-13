@@ -1820,7 +1820,9 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
 /* The spatial board uses measured slots; contain keeps artwork whole inside them. */
 @media (min-width: 641px) {
   .spread-board-shell[data-view='layout'] .tarot-card-figure__inner { aspect-ratio: 5 / 8; }
-  .spread-board-shell[data-view='layout'] .tarot-card-figure__face--front { position: absolute; grid-template-rows: auto minmax(0, 1fr) auto; }
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__face--front { position: absolute; grid-template-rows: auto minmax(0, 1fr); padding: 6px; border-radius: 12px; }
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__frame { margin: 4px 0 0; }
+  .spread-board-shell[data-view='layout'] .tarot-card-figure__footer { display: none; }
   .spread-board-shell[data-view='layout'] .tarot-card-figure__image-wrap { height: 100%; min-height: 0; }
   .spread-board-shell[data-view='layout'] .tarot-card-figure__image-wrap picture { display: block; height: 100%; }
 }
@@ -1865,4 +1867,26 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   .result-actions__secondary { width: auto; }
   .result-actions__secondary .ghost-button--icon-only { flex: none; width: 48px; }
   #records .section__count { max-width: none; font-size: 11px; white-space: nowrap; }
+}
+
+.reading-jumps { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 20px; }
+.reading-jumps a { padding: 10px 16px; border: 1px solid var(--border); border-radius: 999px; color: var(--primary); }
+#core-conclusion, #card-readings, #save-reading { scroll-margin-top: 104px; }
+.reading-details summary, .record-details summary { cursor: pointer; color: var(--primary); padding-block: 12px; }
+.reading-details section, .reading-details [data-testid], .record-details .record-card__thumbs { margin-top: 20px; }
+.encyclopedia-back { display: none; }
+@media (max-width: 900px) {
+  .encyclopedia-back { display: block; justify-self: start; }
+  .encyclopedia-note, .encyclopedia-panel .utility-toggle small { display: none; }
+  .encyclopedia-panel .utility-row { gap: 12px; }
+  .encyclopedia-group-filter { gap: 6px; margin-block: 12px; }
+  .encyclopedia-group-filter .pill { padding: 8px 12px; min-height: 44px; }
+  .encyclopedia-list--scroll { max-height: 180px; }
+  .encyclopedia-chip { padding: 10px; }
+  .encyclopedia-detail__card-shell { width: 132px; padding: 6px; justify-self: center; }
+  .encyclopedia-detail__card .tarot-card-figure__inner { min-height: 0; }
+  .encyclopedia-detail__card .tarot-card-figure__face--front { padding: 4px; }
+  .encyclopedia-detail__card .tarot-card-figure__frame { min-height: 0; margin: 0; }
+  .encyclopedia-detail__card :is(.tarot-card-figure__header, .tarot-card-figure__footer) { display: none; }
+  #core-conclusion, #card-readings, #save-reading { scroll-margin-top: 88px; }
 }

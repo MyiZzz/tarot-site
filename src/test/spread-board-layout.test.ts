@@ -94,6 +94,11 @@ describe('spread board stage layout', () => {
     const layout = buildSpreadStageLayout(board, board.coordinates.map((entry) => entry.key))
 
     expect(layout.captions).toHaveLength(10)
+    for (let i = 0; i < layout.cards.length; i++) {
+      for (let j = i + 1; j < layout.cards.length; j++) {
+        expect(intersects(layout.cards[i]!.rect, layout.cards[j]!.rect), `${i} overlaps ${j}`).toBe(i === 0 && j === 1)
+      }
+    }
 
     for (const caption of layout.captions) {
       const card = layout.cards.find((entry) => entry.key === caption.key)!
@@ -117,9 +122,7 @@ describe('spread board stage layout', () => {
     }
   })
 
-  // R4 DESIGN fixes rectangle separation in parallel. Integration must remove `.fails`
-  // when that fix lands; an unexpected pass deliberately fails this branch's test suite.
-  it.fails('allows only the intentional central crossing in the Celtic Cross', () => {
+  it('allows only the intentional central crossing in the Celtic Cross', () => {
     const spread = SPREADS.find(entry => entry.layoutId === 'celtic-cross')!
     const board = getBoardMetaForSpread(spread)
     const layout = buildSpreadStageLayout(board, board.coordinates.map(entry => entry.key))

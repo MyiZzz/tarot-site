@@ -1,7 +1,7 @@
 # Browser regression checks
 
 Run `npm run build` followed by `npx playwright test`. Playwright starts its own
-Vite preview on port 4302 and stops it afterwards. Set `PLAYWRIGHT_PORT` to change
+Vite preview on port 4310 and stops it afterwards. Set `PLAYWRIGHT_PORT` to change
 that port; existing servers are never reused.
 
 Chromium covers readings, daily guidance, persistence, image fallbacks, responsive
@@ -48,10 +48,8 @@ widths, explicitly switching to “牌阵布局”. Mobile keeps its readable gr
 skips this spatial-only case. The desktop animation check also selects layout
 mode before revealing a card.
 
-The Celtic Cross card-overlap unit regression is temporarily `it.fails` pending
-integration of DESIGN's rectangle-separation fix. Remove `.fails` when merging
-that fix, then visually inspect and regenerate the affected spatial baselines.
-These baselines currently document the known overlap, not an approved layout.
+The Celtic Cross card-overlap regression permits only the intentional central
+crossing. Spatial baselines are visually reviewed after layout changes.
 
 PWA coverage currently exercises first-install offline behavior only. A reliable
 two-deployment update test remains deferred: the shared preview serves one built

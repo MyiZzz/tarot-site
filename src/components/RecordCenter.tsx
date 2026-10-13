@@ -71,14 +71,16 @@ const formatRecordTime = (iso: string) =>
     minute: '2-digit',
   }).format(new Date(iso))
 
-const getRecordSummary = (record: ReadingRecord) =>
-  record.reportSections.coreConclusion.trim() || record.summary
+const getRecordSummary = (record: ReadingRecord) => {
+  const summary = record.reportSections.coreConclusion.trim() || record.summary
+  const question = record.question.trim()
+  for (const prefix of [question, `“${question}”`, `围绕“${question}”`, `围绕「${question}」`, `关于“${question}”`]) {
+    if (prefix && summary.startsWith(prefix)) return summary.slice(prefix.length).replace(/^[，。！？：、\s]+/u, '')
+  }
+  return summary
+}
 
 const getReviewSummary = (record: ReadingRecord): ReviewSummaryItem[] => [
-  {
-    label: '当时主线',
-    value: record.reportSections.coreConclusion.trim() || record.summary,
-  },
   {
     label: '风险提醒',
     value:
@@ -269,6 +271,19 @@ export function RecordCenter({
         </div>
       </details>
 
+      <details className="record-options record-options--backup">
+        <summary>导入与导出记录</summary>
+        <p className="selection-note">记录保存在当前设备的浏览器中，可导出备份或导入到其他设备。</p>
+        <div className="record-controls">
+          <button className="ghost-button" type="button" onClick={onExportRecords}>
+            导出记录
+          </button>
+          <button className="ghost-button" type="button" onClick={onImportRecords}>
+            导入记录
+          </button>
+        </div>
+      </details>
+
       {compareSelection.length > 0 ? (
         <div className="compare-toolbar">
           <p className="selection-note">对比模式：已选择 {compareSelection.length}/2 条</p>
@@ -289,7 +304,7 @@ export function RecordCenter({
             <article key={`compare-${record.id}`} className="result-panel">
               <p className="eyebrow">对比项</p>
               <h3>{record.title}</h3>
-              <p className="record-card__question">“{record.question}”</p>
+              {record.title.trim() !== record.question.trim() ? <p className="record-card__question">“{record.question}”</p> : null}
               <div className="signal-strip">
                 <span>{record.topicLabel}</span>
                 <span>{record.spreadTitle}</span>
@@ -340,7 +355,7 @@ export function RecordCenter({
                 </div>
 
                 <h3>{record.title}</h3>
-                <p className="record-card__question">“{record.question}”</p>
+                {record.title.trim() !== record.question.trim() ? <p className="record-card__question">“{record.question}”</p> : null}
 
                 <div className="signal-strip">
                   <span>{record.topicLabel}</span>
@@ -350,7 +365,6 @@ export function RecordCenter({
                 </div>
 
                 <p>{getRecordSummary(record)}</p>
-                <RecordCardThumbs record={record} />
 
                 {record.tags.length > 0 ? (
                   <div className="signal-strip">
@@ -372,34 +386,38 @@ export function RecordCenter({
                   </button>
                 </div>
 
-                <ReviewSummary prefix={record.id} record={record} />
+                <details className="record-details">
+                  <summary>查看牌面与回顾</summary>
+                  <RecordCardThumbs record={record} />
+                  <ReviewSummary prefix={record.id} record={record} />
 
-                {record.kind === 'reading' ? (
-                  <div className="record-card__details">
-                    <div>
-                      <h4>行动计划</h4>
-                      <ul className="advice-list">
-                        {record.actionPlan.map((step) => (
-                          <li key={`${record.id}-${step.id}`}>
-                            {step.done ? '已完成' : '待完成'} · {step.title}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h4>追问</h4>
-                      {record.followUps.length > 0 ? (
+                  {record.kind === 'reading' ? (
+                    <div className="record-card__details">
+                      <div>
+                        <h4>行动计划</h4>
                         <ul className="advice-list">
-                          {record.followUps.map((entry) => (
-                            <li key={entry.id}>{entry.question}</li>
+                          {record.actionPlan.map((step) => (
+                            <li key={`${record.id}-${step.id}`}>
+                              {step.done ? '已完成' : '待完成'} · {step.title}
+                            </li>
                           ))}
                         </ul>
-                      ) : (
-                        <p>暂无追问</p>
-                      )}
+                      </div>
+                      <div>
+                        <h4>追问</h4>
+                        {record.followUps.length > 0 ? (
+                          <ul className="advice-list">
+                            {record.followUps.map((entry) => (
+                              <li key={entry.id}>{entry.question}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p>暂无追问</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
+                </details>
               </article>
             )
           })
@@ -407,18 +425,6 @@ export function RecordCenter({
           <p className="selection-note">暂时没有匹配的记录。</p>
         )}
       </div>
-      <details className="record-options record-options--backup">
-        <summary>导入与导出记录</summary>
-        <p className="selection-note">记录保存在当前设备的浏览器中，可导出备份或导入到其他设备。</p>
-        <div className="record-controls">
-          <button className="ghost-button" type="button" onClick={onExportRecords}>
-            导出记录
-          </button>
-          <button className="ghost-button" type="button" onClick={onImportRecords}>
-            导入记录
-          </button>
-        </div>
-      </details>
     </section>
   )
 }

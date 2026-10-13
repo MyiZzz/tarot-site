@@ -38,6 +38,7 @@ for (const failure of ['abort', '404'] as const) {
       expect(new Set(requests).size).toBe(requests.length)
       await page.getByRole('button', { name: '揭晓今日能量', exact: true }).click()
       await page.getByRole('button', { name: '顶部导航：记录中心', exact: true }).click()
+      await page.locator('.record-details summary').first().click()
       const thumbnail = page.locator('.record-card__thumbs img').first()
       await page.locator('.record-card__thumbs').first().scrollIntoViewIfNeeded()
       await expect.poll(() => thumbnail.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(expected)
@@ -54,6 +55,7 @@ for (const dpr of [1, 2, 3]) {
     await page.getByRole('button', { name: '揭晓今日能量', exact: true }).click()
     const dailySource = await page.locator('.daily-card-slot img').evaluate((img: HTMLImageElement) => img.currentSrc)
     await page.locator('#records').scrollIntoViewIfNeeded()
+    await page.locator('.record-details summary').first().click()
     const thumbnail = page.locator('.record-card__thumbs img').first()
     await thumbnail.scrollIntoViewIfNeeded()
     // Browsers may reuse the already-downloaded daily source for this same card.
@@ -68,7 +70,11 @@ for (const dpr of [1, 2, 3]) {
     await expect.poll(() => detail.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
     const width = await detail.evaluate((img) => img.getBoundingClientRect().width)
     const expected = [240, 480, 768].find((candidate) => candidate >= width * dpr) ?? 768
-    await expect.poll(() => detail.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(new RegExp(`-${expected}\\.avif\\?v=[a-f0-9]{16}$`))
+    // Compact detail artwork can reuse the larger source already decoded for the daily card.
+    await expect.poll(async () => {
+      const source = await detail.evaluate((img: HTMLImageElement) => img.currentSrc)
+      return new RegExp(`-${expected}\\.avif\\?v=[a-f0-9]{16}$`).test(source) || source === dailySource
+    }).toBe(true)
     await context.close()
   })
 }

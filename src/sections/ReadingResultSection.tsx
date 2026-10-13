@@ -143,53 +143,51 @@ export function ReadingResultSection({
           </div>
           <StatusMessage className="selection-note result-actions__notice" message={shareMessage} />
 
-          <SectionErrorBoundary title="牌阵桌面">
-            <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
-              <SpreadLayoutBoard
-                cards={reading.cards}
-                onReveal={onReveal}
-                positionReadings={reading.positionReadings}
-                revealedPositions={revealedPositions}
-                spread={reading.spread}
-              />
-            </Suspense>
-          </SectionErrorBoundary>
-
-          {reading.interpretation.depthSignals.length > 0 ? (
-            <article className="result-panel result-panel--compact" data-testid="deep-signals-panel">
-              <p className="eyebrow">Deep Signals</p>
-              <h3>深度信号</h3>
-              <ul className="advice-list">
-                {reading.interpretation.depthSignals.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
-          ) : null}
+          <nav className="reading-jumps" aria-label="解读导航">
+            <a href="#core-conclusion">核心结论</a>
+            <a href="#card-readings">逐牌解读</a>
+            <a href="#save-reading">保存</a>
+          </nav>
+          <div id="card-readings" tabIndex={-1}>
+            <SectionErrorBoundary title="牌阵桌面">
+              <Suspense fallback={<p className="selection-note" role="status">正在加载…</p>}>
+                <SpreadLayoutBoard
+                  cards={reading.cards}
+                  onReveal={onReveal}
+                  positionReadings={reading.positionReadings}
+                  revealedPositions={revealedPositions}
+                  spread={reading.spread}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
+          </div>
 
           <div className="result-grid">
-            {getReportSections(reading).map((section, index) => (
-              <article
-                key={section.id}
-                className={`result-panel ${
-                  index === 0 ? 'result-panel--highlighted' : 'result-panel--wide'
-                }`}
-              >
-                <div className="result-panel__stack">
-                  <p className="eyebrow">Reading Report</p>
-                  <h3>{section.title}</h3>
-                  <p className="result-panel__summary">{section.body}</p>
-                </div>
-              </article>
-            ))}
-
-            <article className="result-panel result-panel--highlighted">
-              <div className="result-panel__stack">
-                <p className="eyebrow">Reading Report</p>
-                <h3>完整解读</h3>
-                <p className="result-panel__summary">{reading.deepNarrative}</p>
-              </div>
+            <article id="core-conclusion" tabIndex={-1} className="result-panel result-panel--highlighted">
+              <h3>核心结论</h3>
+              <p className="result-panel__summary">{reading.reportSections.coreConclusion}</p>
             </article>
+            <details key={`${reading.cards.map(entry => entry.card.id).join('-')}-${allRevealed}`} open={!allRevealed} className="result-panel result-panel--wide reading-details">
+              <summary>更多解读 · 状态、风险与完整解读</summary>
+              {reading.interpretation.depthSignals.length > 0 ? (
+                <div data-testid="deep-signals-panel">
+                  <h3>深度信号</h3>
+                  <ul className="advice-list">
+                    {reading.interpretation.depthSignals.map(item => <li key={item}>{item}</li>)}
+                  </ul>
+                </div>
+              ) : null}
+              {getReportSections(reading).slice(1).map(section => (
+                <section key={section.id}>
+                  <h3>{section.title}</h3>
+                  <p>{section.body}</p>
+                </section>
+              ))}
+              <section>
+                <h3>完整解读</h3>
+                <p>{reading.deepNarrative}</p>
+              </section>
+            </details>
 
             <article className="result-panel result-panel--wide">
               <p className="eyebrow">Action Plan</p>
@@ -269,7 +267,7 @@ export function ReadingResultSection({
               </details>
             </article>
 
-            <article className="result-panel result-panel--footer result-panel--wide">
+            <article id="save-reading" tabIndex={-1} className="result-panel result-panel--footer result-panel--wide">
               <p className="eyebrow">Archive</p>
               <RevealText as="h3" text="封存本次指引" />
               <div className="save-history-layout">

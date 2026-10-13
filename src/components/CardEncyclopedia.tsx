@@ -96,6 +96,7 @@ const matchesQuery = (card: TarotCard, rawQuery: string) => {
 }
 
 export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
+  const listRef = useRef<HTMLDivElement>(null)
   const detailRef = useRef<HTMLElement>(null)
   const [scope, setScope] = useState<EncyclopediaScope>('drawn')
   const [groupFilter, setGroupFilter] = useState<EncyclopediaGroupFilter>('all')
@@ -187,6 +188,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
           role="group"
           aria-label="牌卡列表"
           data-testid="encyclopedia-list"
+          ref={listRef}
         >
           {visibleCards.length > 0 ? (
             visibleCards.map((card) => (
@@ -201,7 +203,9 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
                   setSelectedCardId(card.id)
                   requestAnimationFrame(() => {
                     detailRef.current?.focus({ preventScroll: true })
-                    detailRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' })
+                    if (window.matchMedia('(max-width: 900px)').matches) {
+                      detailRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' })
+                    }
                   })
                 }}
               >
@@ -220,6 +224,11 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
 
         {selectedCard ? (
           <article id="encyclopedia-detail" className="encyclopedia-detail" ref={detailRef} tabIndex={-1} aria-label={`${selectedCard.nameZh} · 牌卡详情`}>
+            <button className="ghost-button encyclopedia-back" type="button" onClick={() => {
+              const button = listRef.current?.querySelector<HTMLButtonElement>('.encyclopedia-chip[aria-pressed="true"]')
+              button?.focus({ preventScroll: true })
+              button?.scrollIntoView({ behavior: 'instant', block: 'center' })
+            }}>返回牌卡列表</button>
             <div className="encyclopedia-detail__header">
               <div>
                 <p className="eyebrow">
