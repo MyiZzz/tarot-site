@@ -86,7 +86,6 @@ describe('RecordCenter filters and compare', () => {
         query=""
         records={records}
         recordsMessage={null}
-        storageBackend="indexeddb"
         storageReady
         tagFilter="focus"
       />,
@@ -129,7 +128,6 @@ describe('RecordCenter filters and compare', () => {
         query=""
         records={records}
         recordsMessage={null}
-        storageBackend="indexeddb"
         storageReady
         tagFilter=""
       />,

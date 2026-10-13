@@ -22,7 +22,6 @@ interface RecordCenterProps {
   records: ReadingRecord[]
   recordsMessage: string | null
   sectionId?: string
-  storageBackend: 'indexeddb' | 'localstorage'
   storageReady: boolean
   tagFilter: string
 }
