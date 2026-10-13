@@ -4,7 +4,9 @@ import { gzipSync } from 'node:zlib'
 
 // Decimal bytes, approximately 10% headroom over the optimized build.
 const ENTRY_GZIP_BUDGET = 27_400
-const STARTUP_GZIP_BUDGET = 93_600
+const STARTUP_GZIP_BUDGET = 122_000
+// useDailyReadingState imports this on mount, before any user interaction.
+const EAGER_DYNAMIC_ENTRIES = ['src/lib/daily.ts']
 const dist = resolve(process.argv[2] ?? 'dist')
 
 try {
@@ -19,6 +21,7 @@ try {
     for (const dependency of manifest[key].imports ?? []) visit(dependency)
   }
   for (const [key] of entries) visit(key)
+  for (const key of EAGER_DYNAMIC_ENTRIES) visit(key)
   let startupGzip = 0
   for (const key of startup) {
     const chunk = manifest[key]
@@ -31,9 +34,17 @@ try {
       throw new Error(`Entry gzip ${gzip} exceeds budget ${ENTRY_GZIP_BUDGET}.`)
     }
   }
+  const deferred = Object.entries(manifest).filter(([key, chunk]) =>
+    !startup.has(key) && chunk.file.endsWith('.js'),
+  )
+  let deferredGzip = 0
+  for (const [, chunk] of deferred) {
+    deferredGzip += gzipSync(await readFile(resolve(dist, chunk.file))).length
+  }
+  console.log(`Deferred JS gzip (excluded from startup): ${deferredGzip} bytes`)
   console.log(`Startup JS gzip: ${startupGzip} / ${STARTUP_GZIP_BUDGET} bytes`)
   if (startupGzip > STARTUP_GZIP_BUDGET) {
-    throw new Error('Startup JS gzip exceeds budget (including static imports).')
+    throw new Error('Startup JS gzip exceeds budget (including eager dynamic imports).')
   }
 } catch (error) {
   console.error(`Bundle size check failed: ${error.message}`)

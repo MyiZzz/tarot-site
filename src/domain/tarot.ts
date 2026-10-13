@@ -5,13 +5,12 @@ export type TopicId =
   | 'relationships'
   | 'growth'
 
-export type Arcana = 'major' | 'minor'
 export type Suit = 'wands' | 'cups' | 'swords' | 'pentacles' | null
 export type Orientation = 'up' | 'down'
 export type OrientationMode = 'random' | 'up-only'
 export type ReadingDepthLevel = 'shallow' | 'standard' | 'deep'
 export type DrawPool = 'any' | 'major' | 'wands' | 'cups' | 'swords' | 'pentacles'
-export type LayoutId =
+type LayoutId =
   | 'single'
   | 'line-3'
   | 'cross-5'
@@ -43,12 +42,12 @@ interface TarotCardBase {
   elementTags: string[]
 }
 
-export interface MajorArcanaCard extends TarotCardBase {
+interface MajorArcanaCard extends TarotCardBase {
   arcana: 'major'
   suit: null
 }
 
-export interface MinorArcanaCard extends TarotCardBase {
+interface MinorArcanaCard extends TarotCardBase {
   arcana: 'minor'
   suit: Exclude<Suit, null>
 }
@@ -70,7 +69,7 @@ export interface SpreadPosition {
   drawPool?: DrawPool
 }
 
-export interface SpreadVariantDefinition {
+interface SpreadVariantDefinition {
   id: string
   title: string
   description: string

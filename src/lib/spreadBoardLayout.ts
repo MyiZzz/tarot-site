@@ -13,14 +13,14 @@ export interface BoardMeta {
   coordinates: LayoutCoordinate[]
 }
 
-export interface LayoutRect {
+interface LayoutRect {
   left: number
   right: number
   top: number
   bottom: number
 }
 
-export interface BoardCardLayout extends LayoutCoordinate {
+interface BoardCardLayout extends LayoutCoordinate {
   centerX: number
   centerY: number
   width: number
@@ -28,9 +28,9 @@ export interface BoardCardLayout extends LayoutCoordinate {
   rect: LayoutRect
 }
 
-export type CaptionSide = 'top' | 'right' | 'bottom' | 'left'
+type CaptionSide = 'top' | 'right' | 'bottom' | 'left'
 
-export interface BoardCaptionLayout {
+interface BoardCaptionLayout {
   key: string
   side: CaptionSide
   centerX: number
