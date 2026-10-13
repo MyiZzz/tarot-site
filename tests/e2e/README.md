@@ -58,3 +58,13 @@ test needs isolated versioned deployment fixtures and worker lifecycle control;
 request interception alone does not represent a service-worker upgrade. The
 existing chunk-recovery test covers a failed lazy import and reload recovery,
 but does not claim to cover obsolete chunks across deployments.
+
+## Regenerating visual baselines
+
+Baselines must come from the same image CI uses (`mcr.microsoft.com/playwright:v1.58.2-noble`, matching `@playwright/test`); host fonts differ.
+
+```sh
+npm run build
+docker run --rm --ipc=host -e CI=1 -e TZ=Asia/Shanghai -v "$PWD":/w -w /w mcr.microsoft.com/playwright:v1.58.2-noble \
+  bash -c "npm ci && npm run build && npx playwright test --project=views-desktop --project=views-mobile --project=views-tablet --update-snapshots=changed"
+```

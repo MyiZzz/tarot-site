@@ -54,8 +54,15 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Visual baselines are generated in this exact image (fonts, browsers and
+    # system libs pinned). Keep the tag in sync with @playwright/test and
+    # regenerate snapshots inside it: see tests/e2e/README.md.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      options: --ipc=host
     env:
       TZ: Asia/Shanghai
+      HOME: /root
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -63,17 +70,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - name: Install WebKit and system dependencies
-        id: webkit
-        continue-on-error: true
-        run: npx playwright install --with-deps webkit
       - run: npm run build
       - name: Enforce production bundle budget
         run: npm run size
       - run: npx playwright test
         env:
-          PLAYWRIGHT_WEBKIT: ${{ steps.webkit.outcome == 'success' && '1' || '0' }}
+          PLAYWRIGHT_WEBKIT: '1'
       - name: Upload browser test diagnostics
         if: always()
         uses: actions/upload-artifact@v4

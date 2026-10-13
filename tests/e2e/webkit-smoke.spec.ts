@@ -8,7 +8,7 @@ for (const width of [390, 1440]) {
     await page.goto('/')
     const image = page.locator('.daily-card-slot picture img')
     await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true)
-    expect(await image.evaluate((node: HTMLImageElement) => node.currentSrc)).toMatch(/-(240|480)\.(avif|webp)$/)
+    expect(await image.evaluate((node: HTMLImageElement) => node.currentSrc)).toMatch(/-(240|480)\.(avif|webp)(\?v=[0-9a-f]+)?$/)
     const box = (await image.boundingBox())!
     expect(box.width).toBeGreaterThan(0)
     expect(box.x).toBeGreaterThanOrEqual(0)
