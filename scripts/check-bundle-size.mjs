@@ -2,8 +2,10 @@ import { readFile, readdir, stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 
-// Decimal bytes, approximately 10% headroom over the optimized build.
-const ENTRY_GZIP_BUDGET = 27_400
+// Decimal bytes. Measured under Node 22 (the CI runtime): zlib output differs between
+// Node versions, so the same entry file gzips ~420 bytes larger on Node 22 than Node 20.
+// Budget leaves ~3% headroom over the Node 22 measurement (27,661 bytes).
+const ENTRY_GZIP_BUDGET = 28_500
 const STARTUP_GZIP_BUDGET = 122_000
 // useDailyReadingState imports this on mount, before any user interaction.
 const EAGER_DYNAMIC_ENTRIES = ['src/lib/daily.ts']
