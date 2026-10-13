@@ -98,8 +98,9 @@ export function SpreadLayoutBoard({
                   <TarotCardFigure
                     art={entry.art}
                     card={entry.card}
-                    interactive={!revealed}
-                    onClick={() => onReveal(entry.drawn.positionKey)}
+                    interactive
+                    revealLabel={entry.positionLabel}
+                    onClick={() => { if (!revealed) onReveal(entry.drawn.positionKey) }}
                     orientation={entry.drawn.orientation}
                     revealed={revealed}
                   />

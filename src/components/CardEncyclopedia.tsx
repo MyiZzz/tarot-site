@@ -1,4 +1,4 @@
-import { useDeferredValue, useState } from 'react'
+import { useDeferredValue, useRef, useState } from 'react'
 import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { TAROT_DECK } from '../data/cards'
 import { TOPIC_BY_ID } from '../data/topics'
@@ -96,6 +96,7 @@ const matchesQuery = (card: TarotCard, rawQuery: string) => {
 }
 
 export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
+  const detailRef = useRef<HTMLElement>(null)
   const [scope, setScope] = useState<EncyclopediaScope>('drawn')
   const [groupFilter, setGroupFilter] = useState<EncyclopediaGroupFilter>('all')
   const [query, setQuery] = useState('')
@@ -196,7 +197,13 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
                   card.id === resolvedSelectedCardId ? 'is-active' : ''
                 }`}
                 type="button"
-                onClick={() => setSelectedCardId(card.id)}
+                onClick={() => {
+                  setSelectedCardId(card.id)
+                  requestAnimationFrame(() => {
+                    detailRef.current?.focus({ preventScroll: true })
+                    detailRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' })
+                  })
+                }}
               >
                 <strong>{card.nameZh}</strong>
                 <small>{card.nameEn}</small>
@@ -212,7 +219,7 @@ export function CardEncyclopedia({ featuredCardIds }: CardEncyclopediaProps) {
         </div>
 
         {selectedCard ? (
-          <article className="encyclopedia-detail">
+          <article className="encyclopedia-detail" ref={detailRef} tabIndex={-1} aria-label={`${selectedCard.nameZh} · 牌卡详情`}>
             <div className="encyclopedia-detail__header">
               <div>
                 <p className="eyebrow">

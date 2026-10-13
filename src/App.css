@@ -1126,8 +1126,9 @@
   }
 
   .encyclopedia-list--scroll {
-    max-height: none;
-    overflow: visible;
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
   }
 
   .encyclopedia-chip {
@@ -2031,4 +2032,28 @@ button.tarot-card-figure:focus-visible { outline: 3px solid var(--primary); outl
   .spread-board-shell[data-view='cards'] .spread-board__cards-layer { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 12px; }
   .spread-board-shell[data-view='cards'] .tarot-card-figure__face--front { padding: 10px; }
   .draw-summary__actions { padding-top: 0; border-top: 0; }
+}
+
+/* Keep selected detail clear of the persistent navigation. */
+.encyclopedia-detail { scroll-margin-top: 104px; }
+.record-options summary { cursor: pointer; min-height: 44px; padding-block: 12px; color: var(--primary); }
+.record-options .record-controls { margin-block: 12px; }
+.record-options--backup { border-top: 1px solid var(--outline-variant); padding-top: 12px; }
+.result-actions__primary[aria-disabled='true'] { background: transparent; color: var(--primary); box-shadow: none; cursor: default; }
+@media (max-width: 900px) {
+  .encyclopedia-detail { scroll-margin-top: 88px; }
+}
+@media (max-width: 600px) {
+  #records .utility-toggle { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  #records .utility-toggle .pill { padding: 10px 4px; font-size: 12px; min-height: 44px; }
+  #records .utility-toggle small { display: none; }
+  #records .utility-row { gap: 12px; }
+}
+
+@media (max-width: 600px) {
+  .result-actions--primary { flex-wrap: nowrap; }
+  .result-actions__primary { flex: 1 1 auto; }
+  .result-actions__secondary { width: auto; }
+  .result-actions__secondary .ghost-button--icon-only { flex: none; width: 48px; }
+  #records .section__count { max-width: none; font-size: 11px; white-space: nowrap; }
 }
