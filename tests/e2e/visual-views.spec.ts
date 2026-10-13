@@ -19,7 +19,7 @@ async function navigate(page: Page, label: string) {
   await expect(nav).toBeInViewport()
 }
 
-test('populated viewport baselines retain navigation and the actual home hero', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
   test.setTimeout(90_000)
   await page.clock.setFixedTime(new Date('2026-03-08T04:00:00Z'))
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -32,6 +32,9 @@ test('populated viewport baselines retain navigation and the actual home hero', 
   })
   await page.goto('/')
   await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }' })
+})
+
+test('populated viewport baselines retain navigation and the actual home hero', async ({ page }) => {
   await expect(page.getByRole('region', { name: '首页引导' })).toBeInViewport()
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0)
   await capture(page, '01-home')
@@ -47,6 +50,8 @@ test('populated viewport baselines retain navigation and the actual home hero', 
   await capture(page, '03-result')
   await page.getByRole('button', { name: '全部揭晓', exact: true }).click()
   await expect(page.locator('.spread-board__cards-layer .is-revealed')).toHaveCount(12)
+  await page.getByRole('heading', { name: '结果解读', exact: true }).scrollIntoViewIfNeeded()
+  await capture(page, '03-result-revealed')
   await page.getByLabel('记录标题', { exact: true }).fill('十二个月的生活全景复盘：工作、家庭、关系与个人成长的长期行动记录')
   await page.getByLabel('记录标签', { exact: true }).fill('长期行动 家庭沟通 个人成长')
   await page.getByRole('button', { name: '加入收藏', exact: true }).click()
@@ -58,4 +63,31 @@ test('populated viewport baselines retain navigation and the actual home hero', 
   await page.getByRole('button', { name: /查看全部 78 张/ }).click()
   await expect(page.locator('.encyclopedia-chip')).toHaveCount(78)
   await capture(page, '05-encyclopedia')
+})
+
+test('revealed Celtic Cross preserves the complete spatial board', async ({ page }) => {
+  // Small screens deliberately use the readable card grid instead of spatial positioning.
+  test.skip(page.viewportSize()!.width < 641, 'Spatial board is available from tablet widths')
+  await navigate(page, '开始占卜')
+  await page.getByLabel('占卜问题', { exact: true }).fill('我该如何把长期计划落到行动？')
+  await page.getByRole('button', { name: '事业', exact: true }).click()
+  await page.getByRole('button', { name: '凯尔特十字', exact: true }).click()
+  await page.getByRole('button', { name: '洗牌并抽牌', exact: true }).click()
+  await expect(page.locator('.spread-board__cards-layer button')).toHaveCount(10)
+  await page.getByRole('button', { name: '全部揭晓', exact: true }).click()
+  await expect(page.locator('.spread-board__cards-layer .is-revealed')).toHaveCount(10)
+  const layout = page.getByRole('button', { name: '牌阵布局', exact: true })
+  await layout.click()
+  await expect(layout).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.spread-board-shell')).toHaveAttribute('data-view', 'layout')
+  const board = page.getByRole('region', { name: '牌阵桌面', exact: true })
+  await board.scrollIntoViewIfNeeded()
+  await expect(board.locator('.spread-board__caption')).toHaveCount(10)
+  await board.evaluate(async node => {
+    await document.fonts.ready
+    await Promise.all(Array.from(node.querySelectorAll('img')).map(image => image.decode()))
+  })
+  // An element baseline includes every card and caption even on shorter viewports.
+  await expect(board).toHaveScreenshot('06-celtic-cross-layout.png', { scale: 'css' })
+  expect(await board.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1)
 })
