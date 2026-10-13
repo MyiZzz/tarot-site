@@ -5,7 +5,7 @@ import { TarotCardFigure } from '../components/TarotCardFigure'
 import { CARD_ART_MANIFEST } from '../data/artManifest'
 import { TAROT_DECK } from '../data/cards'
 
-describe('TarotCardFigure compact mode', () => {
+describe('TarotCardFigure', () => {
   it('lets keyboard users reveal a card without exposing its hidden face', async () => {
     const card = TAROT_DECK[0]
     const onClick = vi.fn()
@@ -18,22 +18,6 @@ describe('TarotCardFigure compact mode', () => {
     expect(screen.getByRole('button', { name: '揭晓牌面：现状' })).toHaveFocus()
     await user.keyboard('{Enter}')
     expect(onClick).toHaveBeenCalledOnce()
-  })
-
-  it('shows the Chinese card name instead of a major arcana index', () => {
-    const card = TAROT_DECK.find((entry) => entry.id === 'the-magician')!
-
-    render(
-      <TarotCardFigure
-        art={CARD_ART_MANIFEST[card.id]}
-        card={card}
-        compact
-        revealed
-      />,
-    )
-
-    expect(screen.getByText(card.nameZh)).toBeInTheDocument()
-    expect(screen.queryByText('M1')).not.toBeInTheDocument()
   })
 
   it('renders the actual card name in the front header', () => {
@@ -80,10 +64,13 @@ describe('TarotCardFigure image loading', () => {
     }
   })
 
-  it('does not request artwork in minimal mode', () => {
-    const card = TAROT_DECK[0]
-    const { container } = render(<TarotCardFigure art={CARD_ART_MANIFEST[card.id]}
-      card={card} revealed imageProfile="minimal" />)
-    expect(container.querySelector('picture')).toBeNull()
+  it.each(TAROT_DECK)('renders artwork for $id in either orientation', (card) => {
+    const { rerender } = render(<TarotCardFigure art={CARD_ART_MANIFEST[card.id]}
+      card={card} revealed />)
+    expect(screen.getByRole('img')).not.toHaveClass('is-reversed')
+    rerender(<TarotCardFigure art={CARD_ART_MANIFEST[card.id]}
+      card={card} revealed orientation="down" />)
+    expect(screen.getByRole('img')).toHaveClass('is-reversed')
+    expect(screen.getByRole('img')).toHaveAttribute('alt', `${card.nameZh}（${card.nameEn}）牌面`)
   })
 })

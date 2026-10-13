@@ -10,26 +10,6 @@ const SpreadLayoutBoard = lazy(async () => {
   return { default: module.SpreadLayoutBoard }
 })
 
-type ReportSection = {
-  id: string
-  eyebrow?: string
-  title: string
-  body?: string
-  bullets?: string[]
-}
-
-type FixedReportSections = {
-  coreConclusion?: string
-  currentState?: string
-  riskAlert?: string
-  actionFocus?: string
-  reviewPrompt?: string
-}
-
-type ReadingResultWithSections = ReadingResult & {
-  reportSections?: ReportSection[] | FixedReportSections
-}
-
 interface ReadingResultSectionProps {
   actionPlanDoneIds: string[]
   followUpQuestion: string
@@ -49,7 +29,7 @@ interface ReadingResultSectionProps {
   onShareReading: () => void
   onSubmitFollowUp: () => void
   onToggleActionPlan: (stepId: string) => void
-  reading: ReadingResultWithSections | null
+  reading: ReadingResult | null
   recordNotice: string | null
   recordTagsInput: string
   recordTitle: string
@@ -57,17 +37,7 @@ interface ReadingResultSectionProps {
   shareMessage: string | null
 }
 
-const normalizeReportSections = (reading: ReadingResultWithSections | null): ReportSection[] => {
-  if (!reading?.reportSections) {
-    return []
-  }
-
-  if (Array.isArray(reading.reportSections)) {
-    return reading.reportSections.filter(
-      (section) => section.title && (section.body?.trim() || section.bullets?.length),
-    )
-  }
-
+const getReportSections = (reading: ReadingResult) => {
   return [
     {
       id: 'core-conclusion',
@@ -94,7 +64,7 @@ const normalizeReportSections = (reading: ReadingResultWithSections | null): Rep
       title: '回看问题',
       body: reading.reportSections.reviewPrompt,
     },
-  ].filter((section) => section.body?.trim())
+  ]
 }
 
 export function ReadingResultSection({
@@ -119,8 +89,6 @@ export function ReadingResultSection({
   revealedPositions,
   shareMessage,
 }: ReadingResultSectionProps) {
-  const reportSections = normalizeReportSections(reading)
-
   return (
     <section className="panel section stitch-panel stitch-panel--result" id="result">
       <div className="section__heading">
@@ -198,64 +166,28 @@ export function ReadingResultSection({
           </SectionErrorBoundary>
 
           <div className="result-grid">
-            {reportSections.length > 0 ? (
-              <>
-                {reportSections.map((section, index) => (
-                  <article
-                    key={section.id}
-                    className={`result-panel ${
-                      index === 0 ? 'result-panel--highlighted' : 'result-panel--wide'
-                    }`}
-                  >
-                    <div className="result-panel__stack">
-                      <p className="eyebrow">{section.eyebrow ?? 'Reading Report'}</p>
-                      <h3>{section.title}</h3>
-                      {section.body ? <p className="result-panel__summary">{section.body}</p> : null}
-                    </div>
-                    {section.bullets?.length ? (
-                      <>
-                        {section.body ? <div className="result-panel__divider" aria-hidden="true" /> : null}
-                        <div className="result-panel__stack">
-                          <h4>Key Points</h4>
-                          <ul className="advice-list">
-                            {section.bullets.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
-                    ) : null}
-                  </article>
-                ))}
-
-                <article className="result-panel result-panel--highlighted">
-                  <div className="result-panel__stack">
-                    <p className="eyebrow">Reading Report</p>
-                    <h3>完整解读</h3>
-                    <p className="result-panel__summary">{reading.deepNarrative}</p>
-                  </div>
-                </article>
-              </>
-            ) : (
-              <article className="result-panel result-panel--highlighted">
+            {getReportSections(reading).map((section, index) => (
+              <article
+                key={section.id}
+                className={`result-panel ${
+                  index === 0 ? 'result-panel--highlighted' : 'result-panel--wide'
+                }`}
+              >
                 <div className="result-panel__stack">
                   <p className="eyebrow">Reading Report</p>
-                  <RevealText as="h3" text="解牌报告" />
-                  <p className="result-panel__summary">{reading.deepNarrative}</p>
-                </div>
-
-                <div className="result-panel__divider" aria-hidden="true" />
-
-                <div className="result-panel__stack">
-                  <h4>行动建议</h4>
-                  <ul className="advice-list">
-                    {reading.advice.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
+                  <h3>{section.title}</h3>
+                  <p className="result-panel__summary">{section.body}</p>
                 </div>
               </article>
-            )}
+            ))}
+
+            <article className="result-panel result-panel--highlighted">
+              <div className="result-panel__stack">
+                <p className="eyebrow">Reading Report</p>
+                <h3>完整解读</h3>
+                <p className="result-panel__summary">{reading.deepNarrative}</p>
+              </div>
+            </article>
 
             <article className="result-panel result-panel--wide">
               <p className="eyebrow">Action Plan</p>

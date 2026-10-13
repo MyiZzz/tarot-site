@@ -110,14 +110,8 @@ export interface DrawnCard {
 }
 
 export interface CardArtManifest {
-  cardId: string
   frame: 'sun' | 'moon' | 'gate' | 'ribbon'
-  motif: string
-  constellation: string
-  seal: string
   glyphs: string[]
-  imageUrl?: string
-  imageCredit?: string
 }
 
 export interface ReadingPreferences {
