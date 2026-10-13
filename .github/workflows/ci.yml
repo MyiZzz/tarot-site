@@ -65,6 +65,8 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
+      - name: Enforce production bundle budget
+        run: npm run size
       - run: npx playwright test
       - name: Upload browser test diagnostics
         if: always()
