@@ -110,6 +110,12 @@ dist/
 
 Vite 配置中的 `base` 已设置为 `./`，因此这个项目适合部署到 GitHub Pages、Netlify、Vercel，或任何支持静态文件托管的环境。
 
+### 子路径与分享元数据
+
+图标、分享封面和牌面资源均使用 Vite 的 `base`。默认 `./` 支持子目录部署；如果使用固定子路径，可执行 `npm run build -- --base=/tarot/`。部署目录应使用带尾斜杠的地址访问。
+
+社交平台通常要求 `og:image` 与 `twitter:image` 为绝对 URL。确定正式域名后，请在部署产物中将这两项替换为实际公开的封面 URL；如需 canonical 或 `og:url`，也应使用该站点的正式地址。仓库不预设域名。
+
 ### 3. GitHub Pages 部署
 
 适合直接从当前 GitHub 仓库发布静态站点。
