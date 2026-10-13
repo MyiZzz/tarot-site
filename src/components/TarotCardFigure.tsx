@@ -7,6 +7,7 @@ interface TarotCardFigureProps {
   art: CardArtManifest
   orientation?: Orientation
   label?: string
+  revealLabel?: string
   revealed: boolean
   interactive?: boolean
   onClick?: () => void
@@ -21,6 +22,7 @@ export function TarotCardFigure({
   art,
   orientation = 'up',
   label,
+  revealLabel,
   revealed,
   interactive = false,
   onClick,
@@ -46,7 +48,7 @@ export function TarotCardFigure({
     <Tag
       className={classNameValue}
       data-testid={testId}
-      aria-label={interactive && !revealed ? `揭晓牌面：${label ?? '塔罗牌'}` : undefined}
+      aria-label={interactive ? (revealed ? `${revealLabel ?? label ?? '塔罗牌'}：${card.nameZh} · ${orientation === 'up' ? '正位' : '逆位'} · 已揭晓` : `揭晓牌面：${revealLabel ?? label ?? '塔罗牌'}`) : undefined}
       aria-disabled={interactive && revealed ? true : undefined}
       type={interactive ? 'button' : undefined}
       onClick={interactive && !revealed ? onClick : undefined}

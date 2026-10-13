@@ -89,6 +89,8 @@ export function ReadingResultSection({
   revealedPositions,
   shareMessage,
 }: ReadingResultSectionProps) {
+  const allRevealed = reading?.cards.every((entry) => revealedPositions.includes(entry.drawn.positionKey)) ?? false
+
   return (
     <section className="panel section stitch-panel stitch-panel--result" id="result">
       <div className="section__heading">
@@ -106,29 +108,17 @@ export function ReadingResultSection({
             <span>{TOPIC_BY_ID[reading.input.topic].label}</span>
             <span>{reading.spread.title}</span>
             {reading.spread.activeVariantTitle ? <span>{reading.spread.activeVariantTitle}</span> : null}
-            {reading.dominantSignals.map((signal, index) => (
-              <span key={`signal-${index}-${signal}`}>{signal}</span>
-            ))}
           </div>
-          {reading.interpretation.depthSignals.length > 0 ? (
-            <article className="result-panel result-panel--compact" data-testid="deep-signals-panel">
-              <p className="eyebrow">Deep Signals</p>
-              <h3>深度信号</h3>
-              <ul className="advice-list">
-                {reading.interpretation.depthSignals.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
-          ) : null}
+
 
           <div className="result-actions result-actions--primary">
             <button
               className="primary-button result-actions__primary"
               type="button"
-              onClick={onRevealAll}
+              aria-disabled={allRevealed}
+              onClick={allRevealed ? undefined : onRevealAll}
             >
-              全部揭晓
+              {allRevealed ? '已全部揭晓' : '全部揭晓'}
             </button>
             <div className="result-actions__secondary">
               <button
@@ -164,6 +154,18 @@ export function ReadingResultSection({
               />
             </Suspense>
           </SectionErrorBoundary>
+
+          {reading.interpretation.depthSignals.length > 0 ? (
+            <article className="result-panel result-panel--compact" data-testid="deep-signals-panel">
+              <p className="eyebrow">Deep Signals</p>
+              <h3>深度信号</h3>
+              <ul className="advice-list">
+                {reading.interpretation.depthSignals.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ) : null}
 
           <div className="result-grid">
             {getReportSections(reading).map((section, index) => (

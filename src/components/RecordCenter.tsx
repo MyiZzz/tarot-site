@@ -149,7 +149,6 @@ export function RecordCenter({
   records,
   recordsMessage,
   sectionId = 'records',
-  storageBackend,
   storageReady,
   tagFilter,
 }: RecordCenterProps) {
@@ -181,18 +180,10 @@ export function RecordCenter({
           <RevealText as="h2" text="记录中心" />
         </div>
         <span className="section__count">
-          {records.length} 条 · {storageReady ? storageBackend : '同步中'}
+          {records.length} 条 · {storageReady ? '已存于此设备' : '正在读取'}
         </span>
       </div>
 
-      <div className="record-controls">
-        <button className="ghost-button" type="button" onClick={onExportRecords}>
-          导出记录
-        </button>
-        <button className="ghost-button" type="button" onClick={onImportRecords}>
-          导入记录
-        </button>
-      </div>
       <StatusMessage message={recordsMessage} />
 
       <div className="utility-row">
@@ -251,42 +242,47 @@ export function RecordCenter({
         </label>
       </div>
 
-      <div className="record-controls">
-        <label className="inline-input">
-          <span>标签筛选</span>
-          <select value={tagFilter} onChange={(event) => onTagFilterChange(event.target.value)}>
-            <option value="">全部标签</option>
-            {availableTags.map((tag) => (
-              <option key={tag} value={tag}>
-                {tag}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="inline-input">
-          <span>时间筛选</span>
-          <select
-            value={dateFilter}
-            onChange={(event) => onDateFilterChange(event.target.value as RecordDateFilter)}
-          >
-            <option value="all">全部时间</option>
-            <option value="7d">最近 7 天</option>
-            <option value="30d">最近 30 天</option>
-          </select>
-        </label>
-      </div>
+      <details className="record-options">
+        <summary>更多筛选{tagFilter || dateFilter !== 'all' ? ' · 已启用' : ''}</summary>
+        <div className="record-controls">
+          <label className="inline-input">
+            <span>标签筛选</span>
+            <select value={tagFilter} onChange={(event) => onTagFilterChange(event.target.value)}>
+              <option value="">全部标签</option>
+              {availableTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="inline-input">
+            <span>时间筛选</span>
+            <select
+              value={dateFilter}
+              onChange={(event) => onDateFilterChange(event.target.value as RecordDateFilter)}
+            >
+              <option value="all">全部时间</option>
+              <option value="7d">最近 7 天</option>
+              <option value="30d">最近 30 天</option>
+            </select>
+          </label>
+        </div>
+      </details>
 
-      <div className="compare-toolbar">
-        <p className="selection-note">对比模式：已选择 {compareSelection.length}/2 条</p>
-        <button
-          className="ghost-button"
-          disabled={compareSelection.length === 0}
-          type="button"
-          onClick={onClearCompare}
-        >
-          清空对比
-        </button>
-      </div>
+      {compareSelection.length > 0 ? (
+        <div className="compare-toolbar">
+          <p className="selection-note">对比模式：已选择 {compareSelection.length}/2 条</p>
+          <button
+            className="ghost-button"
+            disabled={compareSelection.length === 0}
+            type="button"
+            onClick={onClearCompare}
+          >
+            清空对比
+          </button>
+        </div>
+      ) : null}
 
       {compareRecords.length > 0 ? (
         <div className="compare-panel">
@@ -412,6 +408,18 @@ export function RecordCenter({
           <p className="selection-note">暂时没有匹配的记录。</p>
         )}
       </div>
+      <details className="record-options record-options--backup">
+        <summary>导入与导出记录</summary>
+        <p className="selection-note">记录保存在当前设备的浏览器中，可导出备份或导入到其他设备。</p>
+        <div className="record-controls">
+          <button className="ghost-button" type="button" onClick={onExportRecords}>
+            导出记录
+          </button>
+          <button className="ghost-button" type="button" onClick={onImportRecords}>
+            导入记录
+          </button>
+        </div>
+      </details>
     </section>
   )
 }

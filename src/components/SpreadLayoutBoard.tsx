@@ -100,8 +100,8 @@ export function SpreadLayoutBoard({
                     card={entry.card}
                     interactive
                     imageProfile="compact"
-                    label={entry.positionLabel}
-                    onClick={() => onReveal(entry.drawn.positionKey)}
+                    revealLabel={entry.positionLabel}
+                    onClick={() => { if (!revealed) onReveal(entry.drawn.positionKey) }}
                     orientation={entry.drawn.orientation}
                     revealed={revealed}
                   />
